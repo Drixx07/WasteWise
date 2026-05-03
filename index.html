@@ -4,14 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WasteWise MIT Version</title>
-
 <style>
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   background: #f4f6fb;
 }
-
 .header {
   background: #2e9e60;
   color: white;
@@ -19,11 +17,9 @@ body {
   text-align: center;
   font-weight: bold;
 }
-
 .container {
   padding: 16px;
 }
-
 button {
   width: 100%;
   padding: 14px;
@@ -32,103 +28,98 @@ button {
   border-radius: 10px;
   font-size: 16px;
   font-weight: bold;
-  cursor: pointer;
 }
-
 .btn-photo { background: #2e9e60; color: white; }
 .btn-gallery { background: #3b5bdb; color: white; }
 .btn-analyze { background: #111; color: white; }
-
 #preview {
   width: 100%;
   margin-top: 15px;
   border-radius: 12px;
   display: none;
 }
-
 #result {
   background: white;
   margin-top: 15px;
   padding: 15px;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  white-space: pre-wrap;
+}
+.small {
+  font-size: 13px;
+  color: #666;
+  margin-top: 8px;
 }
 </style>
 </head>
-
 <body>
 
-<div class="header">WasteWise (MIT Version)</div>
+<div class="header">WasteWise MIT Version</div>
 
 <div class="container">
-
   <button class="btn-photo" onclick="requestPhoto()">📷 Take Photo</button>
   <button class="btn-gallery" onclick="requestGallery()">🖼️ Pick Image</button>
 
-  <img id="preview">
+  <img id="preview" alt="Preview">
 
   <button class="btn-analyze" onclick="analyzeWaste()">🔍 Analyze</button>
 
-  <div id="result">No analysis yet.</div>
-
+  <div id="result">No image yet.</div>
+  <div class="small">Save your API key in MIT first, then take or pick an image.</div>
 </div>
 
 <script>
-// =============================
-// STATE
-// =============================
 let selectedImageBase64 = null;
 let apiKey = "";
+let lastMITValue = "";
 
-// =============================
-// SEND COMMAND TO MIT
-// =============================
 function requestPhoto() {
   if (window.AppInventor) {
     window.AppInventor.setWebViewString("ACTION:TAKE_PHOTO");
   } else {
-    alert("Run this inside MIT App Inventor");
+    alert("Open this inside MIT App Inventor WebViewer.");
   }
 }
 
 function requestGallery() {
   if (window.AppInventor) {
     window.AppInventor.setWebViewString("ACTION:PICK_IMAGE");
+  } else {
+    alert("Open this inside MIT App Inventor WebViewer.");
   }
 }
 
-// =============================
-// RECEIVE DATA FROM MIT
-// =============================
 function checkMITData() {
   if (!window.AppInventor) return;
 
   try {
     const val = window.AppInventor.getWebViewString();
 
-    if (!val || val === window._lastVal) return;
-    window._lastVal = val;
+    if (!val || val === lastMITValue) return;
+    lastMITValue = val;
 
-    // API KEY
     if (val.startsWith("APIKEY:")) {
-      apiKey = val.replace("APIKEY:", "");
-      console.log("API Key received");
+      apiKey = val.replace("APIKEY:", "").trim();
+      document.getElementById("result").innerHTML = apiKey
+        ? "API key saved. Now take or pick an image."
+        : "API key is empty.";
       return;
     }
 
-    // IMAGE BASE64
-    if (val.length > 1000) {
-      receiveImage(val);
+    if (val.startsWith("IMAGE:")) {
+      const base64 = val.replace("IMAGE:", "");
+      receiveImage(base64);
+      return;
     }
 
-  } catch (e) {}
+  } catch (e) {
+    document.getElementById("result").innerHTML = "MIT bridge error: " + e.message;
+  }
 }
 
 setInterval(checkMITData, 500);
 
-// =============================
-// DISPLAY IMAGE
-// =============================
 function receiveImage(base64) {
   selectedImageBase64 = base64;
 
@@ -139,17 +130,14 @@ function receiveImage(base64) {
   document.getElementById("result").innerHTML = "Image loaded. Tap Analyze.";
 }
 
-// =============================
-// AI ANALYSIS
-// =============================
 async function analyzeWaste() {
   if (!selectedImageBase64) {
-    alert("Take or pick an image first.");
+    document.getElementById("result").innerHTML = "Please take or pick an image first.";
     return;
   }
 
   if (!apiKey) {
-    alert("API key not set from MIT.");
+    document.getElementById("result").innerHTML = "Please save your OpenRouter API key in MIT first.";
     return;
   }
 
@@ -160,14 +148,19 @@ async function analyzeWaste() {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + apiKey,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": window.location.href,
+        "X-Title": "WasteWise MIT"
       },
       body: JSON.stringify({
         model: "google/gemini-2.0-flash-001",
         messages: [{
           role: "user",
           content: [
-            { type: "text", text: "Identify waste and category." },
+            {
+              type: "text",
+              text: "Identify the waste item in this image. Give the category: Biodegradable, Non-Biodegradable, Recyclable, Residual Waste, or Hazardous Waste. Also give the correct disposal instruction for the Philippines. Keep the answer short."
+            },
             {
               type: "image_url",
               image_url: {
@@ -175,19 +168,23 @@ async function analyzeWaste() {
               }
             }
           ]
-        }]
+        }],
+        max_tokens: 300
       })
     });
 
     const data = await res.json();
 
-    const text = data.choices?.[0]?.message?.content || "No response";
+    if (data.error) {
+      document.getElementById("result").innerHTML = "OpenRouter error: " + (data.error.message || JSON.stringify(data.error));
+      return;
+    }
 
+    const text = data.choices?.[0]?.message?.content || "No response.";
     document.getElementById("result").innerHTML = text;
 
   } catch (err) {
-    document.getElementById("result").innerHTML =
-      "Error: " + err.message;
+    document.getElementById("result").innerHTML = "Error: " + err.message;
   }
 }
 </script>
