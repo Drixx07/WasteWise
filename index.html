@@ -27,6 +27,7 @@
     --text-sub: #6c757d;
     --border: #e9ecef;
     --header-h: 60px;
+    --total-top: calc(60px + 68px);
     --nav-h: 68px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -35,29 +36,29 @@
   /* ── Header ── */
   .app-header {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: var(--blue); color: #fff;
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 60%, #4ade80 100%); color: #fff;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 16px; height: var(--header-h);
   }
   .app-header .logo { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 20px; letter-spacing: -0.5px; }
-  .app-header .logo span { color: #7dd3a8; }
+  .app-header .logo span { color: #d4f7e7; }
   .app-header .icon-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 6px; }
 
   /* ── Hero banner ── */
   .hero {
-    margin-top: var(--header-h);
+    margin-top: 0;
     background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 60%, #4ade80 100%);
     color: #fff; padding: 24px 20px 28px;
   }
   .hero h1 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 28px; line-height: 1.15; }
   .hero p { margin-top: 6px; font-size: 14px; opacity: 0.88; }
 
-  /* ── Bottom Nav ── */
+  /* ── Top Nav (below header) ── */
   .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-    background: var(--card); border-top: 1px solid var(--border);
+    position: fixed; top: var(--header-h); left: 0; right: 0; z-index: 99;
+    background: var(--card); border-bottom: 1px solid var(--border);
     display: flex; height: var(--nav-h);
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   }
   .nav-item {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -72,12 +73,12 @@
     width: 52px; height: 52px; background: var(--green);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 16px rgba(46,158,96,0.45);
-    margin-bottom: 2px; position: relative; top: -10px;
+    margin-bottom: 0; position: relative; top: 0;
   }
   .cam-circle svg { width: 26px; height: 26px; color: #fff; }
 
   /* ── Screens ── */
-  .screen { display: none; padding: 0 0 calc(var(--nav-h) + 8px); min-height: 100vh; }
+  .screen { display: none; padding: var(--total-top) 0 16px; min-height: 100vh; }
   .screen.active { display: block; }
 
   /* ── Content wrapper ── */
@@ -295,11 +296,7 @@
 
 <!-- ════════════════ HOME ════════════════ -->
 <div id="screen-home" class="screen active">
-  <div class="hero">
-    <h1>WasteWise 🌿</h1>
-    <p>Smart waste segregation guide for a cleaner world</p>
-  </div>
-  <div class="content">
+  <div class="content" style="padding-top: 20px;">
     <div class="section-label">Features</div>
     <div class="feature-card" onclick="switchScreen('camera')">
       <div class="feature-icon" style="background:#e8f5ee;">📷</div>
@@ -315,7 +312,7 @@
         <h3>Waste Classification</h3>
         <p>Browse by waste type</p>
       </div>
-      <div class="chevron">›</div>
+      
     </div>
     <div class="feature-card" onclick="switchScreen('tips')">
       <div class="feature-icon" style="background:#fff9db;">💡</div>
@@ -340,10 +337,7 @@
 
 <!-- ════════════════ CAMERA ════════════════ -->
 <div id="screen-camera" class="screen">
-  <div class="hero" style="padding: 18px 20px 22px;">
-    <h1 style="font-size:22px;">🎥 Waste Camera</h1>
-    <p>Point at any waste item to identify it</p>
-  </div>
+ 
 
   <!-- MIT App Inventor notice (shown when MIT bridge is detected) -->
   <div id="mit-notice">
@@ -408,10 +402,7 @@
 
 <!-- ════════════════ CLASSIFICATION ════════════════ -->
 <div id="screen-classify" class="screen">
-  <div class="hero" style="padding: 18px 20px 22px;">
-    <h1 style="font-size:22px;">🗂️ Classification</h1>
-    <p>Browse by waste type</p>
-  </div>
+  
   <div class="filter-chips" id="classifyChips">
     <div class="chip active-all" onclick="filterWaste('all',this)">All</div>
     <div class="chip" onclick="filterWaste('bio',this)">Biodegradable</div>
@@ -425,10 +416,7 @@
 
 <!-- ════════════════ TIPS ════════════════ -->
 <div id="screen-tips" class="screen">
-  <div class="hero" style="padding: 18px 20px 22px;">
-    <h1 style="font-size:22px;">💡 Recycling Tips</h1>
-    <p>Eco-friendly advice for everyday life</p>
-  </div>
+  
   <div class="tip-filter">
     <div class="tip-chip active" onclick="filterTips('all',this)">All</div>
     <div class="tip-chip" onclick="filterTips('home',this)">Home</div>
@@ -520,7 +508,11 @@ function detectMIT() {
     isMITMode = true;
     document.getElementById('mit-notice').style.display = 'block';
     // In MIT mode the shutter cannot use getUserMedia, so relabel it
-    document.getElementById('shutterBtn').title = 'Not available in MIT mode';
+    // Hide the in-HTML capture and upload buttons — App Inventor's own buttons handle this
+    document.getElementById('shutterBtn').style.display = 'none';
+    document.getElementById('uploadBtn').style.display  = 'none';
+    // Expand the Analyze button to fill the full row
+    document.getElementById('analyzeBtn').style.flex = '1';
     startMITPolling();
   }
 }
