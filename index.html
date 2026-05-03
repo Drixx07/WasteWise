@@ -658,7 +658,10 @@ function stopCamera() {
 // ─── Shutter button: snap a frame from the live video ─────
 function handleShutter() {
   if (isMITMode) {
-    alert('Camera capture is not available in MIT AI Companion.\nUse the 📁 Upload button and your App Inventor blocks to send a photo.');
+    // Signal App Inventor to open the Camera.
+    // In your MIT blocks: when WebViewer.WebViewStringChange → if value = "ACTION:TAKE_PHOTO" → call Camera1.TakePicture
+    // After capture: set WebViewer.WebViewString = Camera1.Image
+    try { window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO'); } catch(e) {}
     return;
   }
 
@@ -712,8 +715,10 @@ function resetCameraView() {
 // ═══════════════════════════════════════════════
 function handleUploadClick() {
   if (isMITMode) {
-    // Tell the user the MIT bridge is being used
-    alert('In MIT AI Companion, use your App Inventor blocks:\n\n1. Add a Button + Camera or ImagePicker component\n2. In the block: WebViewer.WebViewString = Camera.Image (or ImagePicker.Selection)\n\nThe image will appear here automatically.');
+    // Signal App Inventor to open the ImagePicker.
+    // In your MIT blocks: when WebViewer.WebViewStringChange → if value = "ACTION:PICK_IMAGE" → call ImagePicker1.Open
+    // After the user picks: set WebViewer.WebViewString = ImagePicker1.Selection  (or Camera1.Image)
+    try { window.AppInventor.setWebViewString('ACTION:PICK_IMAGE'); } catch(e) {}
     return;
   }
   document.getElementById('fileInput').click();
