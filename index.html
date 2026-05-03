@@ -526,18 +526,73 @@ function detectMIT() {
 }
 
 function startMITPolling() {
-  // Poll every 500 ms for a base64 image string set by App Inventor
+  // Poll every 500 ms for an image set by App Inventor via WebViewString.
+  // MIT App Inventor's Camera1.AfterPhoto gives a local file path like
+  // /storage/emulated/0/DCIM/Camera/IMG_xxx.jpg — NOT base64.
+  // We handle both cases: file path and base64 data.
   setInterval(() => {
     try {
       const val = window.AppInventor.getWebViewString();
-      if (val && val.length > 100 && val !== window._lastMITVal) {
-        window._lastMITVal = val;
-        // Strip any accidental data-URL prefix the block might add
-        const b64 = val.replace(/^data:image\/[a-z]+;base64,/, '');
+      if (!val || val === window._lastMITVal) return;
+      window._lastMITVal = val;
+
+      if (val.startsWith('data:image')) {
+        // Already a full data-URL
+        const b64 = val.split(',')[1];
         receiveImage(b64);
+      } else if (val.length > 500 && !val.startsWith('/') && !val.startsWith('file://')) {
+        // Looks like a raw base64 string
+        receiveImage(val);
+      } else {
+        // It's a file path (most common from Camera1.AfterPhoto)
+        receiveImageFromPath(val);
       }
     } catch(e) { /* ignore */ }
   }, 500);
+}
+
+// Load image from a local file path (MIT Camera gives us this)
+// Draws it onto a canvas to extract base64 for the AI API call
+function receiveImageFromPath(path) {
+  // Show the image directly — MIT Companion's WebView can load local file:// paths
+  const src = path.startsWith('file://') ? path : 'file://' + path;
+  const prev = document.getElementById('uploaded-preview');
+
+  stopCamera();
+  document.getElementById('cam-placeholder').style.display = 'none';
+  document.getElementById('scanOverlay').style.display    = 'flex';
+  document.getElementById('liveVideo').classList.remove('active');
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
+  document.getElementById('resultCard').classList.add('visible');
+  document.getElementById('resultContent').innerHTML =
+    '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+
+  prev.src = src;
+  prev.classList.add('visible');
+
+  // Convert to base64 via canvas so we can send it to the AI API
+  const img = new window.Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    // Scale down large photos to keep API payload reasonable
+    const MAX = 1024;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > MAX || h > MAX) {
+      if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+      else        { w = Math.round(w * MAX / h); h = MAX; }
+    }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    selectedImageBase64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+  };
+  img.onerror = () => {
+    // If canvas loading fails (sandboxing), still allow Analyze with path-based src
+    // We'll try sending the image as a URL directly
+    selectedImageBase64 = '__path__' + src;
+  };
+  img.src = src;
 }
 
 // ─── Central function: load base64 image into preview ─────
@@ -728,6 +783,16 @@ async function analyzeWaste() {
   const resultContent = document.getElementById('resultContent');
   resultCard.classList.add('visible');
   document.getElementById('analyzeBtn').disabled = true;
+
+  // __path__ means canvas couldn't extract base64 (sandboxing) — not much we can do
+  if (selectedImageBase64.startsWith('__path__')) {
+    resultContent.innerHTML =
+      '<div style="color:var(--orange);font-size:13px;">⚠️ Could not read the image file directly.<br>' +
+      'In your App Inventor blocks, try connecting an <strong>ImagePicker</strong> instead of Camera, ' +
+      'or ask for help converting the camera output to base64.</div>';
+    document.getElementById('analyzeBtn').disabled = false;
+    return;
+  }
 
   let data = null, lastErr = null;
 
