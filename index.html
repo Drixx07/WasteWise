@@ -521,28 +521,28 @@ function detectMIT() {
 function startMITPolling() {
   if (mitPollStarted) return;
   mitPollStarted = true;
-  // Poll every 500 ms for an image set by App Inventor via WebViewString.
-  // MIT App Inventor's Camera1.AfterPhoto gives a local file path like
-  // /storage/emulated/0/DCIM/Camera/IMG_xxx.jpg — NOT base64.
-  // We handle both cases: file path and base64 data.
+
   setInterval(() => {
     try {
+      if (typeof window.AppInventor === 'undefined') return;
+
       const val = window.AppInventor.getWebViewString();
       if (!val || val === window._lastMITVal) return;
       window._lastMITVal = val;
 
+      // Ignore command/status messages. These are for MIT blocks, not images.
+      if (val === 'ACTION:TAKE_PHOTO' || val === 'ACTION:PICK_IMAGE' || val === 'HTML_LOADED') return;
+
       if (val.startsWith('data:image')) {
-        // Already a full data-URL
-        const b64 = val.split(',')[1];
-        receiveImage(b64);
-      } else if (val.length > 500 && !val.startsWith('/') && !val.startsWith('file://')) {
-        // Looks like a raw base64 string
+        receiveImage(val.split(',')[1]);
+      } else if (val.length > 500 && !val.startsWith('/') && !val.startsWith('file://') && !val.startsWith('content://')) {
         receiveImage(val);
-      } else {
-        // It's a file path (most common from Camera1.AfterPhoto)
+      } else if (val.startsWith('/') || val.startsWith('file://') || val.startsWith('content://')) {
         receiveImageFromPath(val);
       }
-    } catch(e) { /* ignore */ }
+    } catch(e) {
+      console.warn('MIT polling error:', e);
+    }
   }, 500);
 }
 
@@ -550,7 +550,7 @@ function startMITPolling() {
 // Draws it onto a canvas to extract base64 for the AI API call
 function receiveImageFromPath(path) {
   // Show the image directly — MIT Companion's WebView can load local file:// paths
-  const src = path.startsWith('file://') ? path : 'file://' + path;
+  const src = (path.startsWith('file://') || path.startsWith('content://')) ? path : 'file://' + path;
   const prev = document.getElementById('uploaded-preview');
 
   stopCamera();
@@ -592,27 +592,37 @@ function receiveImageFromPath(path) {
 
 // ─── Central function: load base64 image into preview ─────
 function receiveImage(base64) {
+  if (!base64) return;
+
+  // Accept either raw base64 or full data URL.
+  if (base64.startsWith('data:image')) {
+    base64 = base64.split(',')[1];
+  }
+
   selectedImageBase64 = base64;
-  const dataUrl = "data:image/jpeg;base64," + base64;
+  const dataUrl = 'data:image/jpeg;base64,' + base64;
 
   stopCamera();
 
   const prev = document.getElementById('uploaded-preview');
+  prev.onload = () => {
+    document.getElementById('cam-placeholder').style.display = 'none';
+    document.getElementById('scanOverlay').style.display = 'flex';
+    document.getElementById('liveVideo').classList.remove('active');
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultContent').innerHTML =
+      '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+  };
+  prev.onerror = () => {
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultContent').innerHTML =
+      '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. Try another photo.</div>';
+  };
   prev.src = dataUrl;
   prev.classList.add('visible');
-
-  document.getElementById('cam-placeholder').style.display = 'none';
-  document.getElementById('scanOverlay').style.display = 'flex';
-  document.getElementById('liveVideo').classList.remove('active');
-
-  document.getElementById('analyzeBtn').disabled = false;
-  document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
-
-  document.getElementById('resultCard').classList.add('visible');
-  document.getElementById('resultContent').innerHTML =
-    '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
 }
-
 
 // ═══════════════════════════════════════════════
 // CAMERA (getUserMedia)
@@ -960,8 +970,9 @@ window.onload = () => {
   renderWasteList('all');
   renderTips('all');
   detectMIT();
-  setTimeout(detectMIT, 500);   // MIT sometimes injects AppInventor after page load
-  setTimeout(detectMIT, 1500);  // second retry so polling definitely starts
+  setTimeout(detectMIT, 500);
+  setTimeout(detectMIT, 1500);
+
   try {
     if (window.AppInventor) {
       isMITMode = true;
@@ -969,7 +980,9 @@ window.onload = () => {
       window.AppInventor.setWebViewString('HTML_LOADED');
     }
   } catch(e) {}
-  if (!apiKey) setTimeout(openSettings, 800);
+
+  // Do not auto-open the API key modal. It can look like the app is unclickable.
+  // Users can open it manually with the settings gear.
 };
 </script>
 </body>
