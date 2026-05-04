@@ -509,8 +509,9 @@ function detectMIT() {
     document.getElementById('mit-notice').style.display = 'block';
     // In MIT mode the shutter cannot use getUserMedia, so relabel it
     // Hide the in-HTML capture and upload buttons — App Inventor's own buttons handle this
-    //document.getElementById('shutterBtn').style.display = 'none';
-    //document.getElementById('uploadBtn').style.display  = 'none';
+    // Keep HTML camera/upload buttons visible in MIT mode so they can trigger App Inventor blocks.
+    // document.getElementById('shutterBtn').style.display = 'none';
+    // document.getElementById('uploadBtn').style.display  = 'none';
     // Expand the Analyze button to fill the full row
     document.getElementById('analyzeBtn').style.flex = '1';
     startMITPolling();
@@ -649,13 +650,13 @@ function stopCamera() {
 
 // ─── Shutter button: snap a frame from the live video ─────
 function handleShutter() {
-  if (isMITMode) {
-    // Signal App Inventor to open the Camera.
-    // In your MIT blocks: when WebViewer.WebViewStringChange → if value = "ACTION:TAKE_PHOTO" → call Camera1.TakePicture
-    // After capture: set WebViewer.WebViewString = Camera1.Image
-    try { window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO'); } catch(e) {}
-    return;
-  }
+  // Direct MIT App Inventor bridge. This works even if detectMIT() did not run.
+  try {
+    if (window.AppInventor) {
+      window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO');
+      return;
+    }
+  } catch(e) {}
 
   const vid = document.getElementById('liveVideo');
 
@@ -706,13 +707,15 @@ function resetCameraView() {
 // Instead, MIT blocks push base64 via WebViewString (polled above).
 // ═══════════════════════════════════════════════
 function handleUploadClick() {
-  if (isMITMode) {
-    // Signal App Inventor to open the ImagePicker.
-    // In your MIT blocks: when WebViewer.WebViewStringChange → if value = "ACTION:PICK_IMAGE" → call ImagePicker1.Open
-    // After the user picks: set WebViewer.WebViewString = ImagePicker1.Selection  (or Camera1.Image)
-    try { window.AppInventor.setWebViewString('ACTION:PICK_IMAGE'); } catch(e) {}
-    return;
-  }
+  // Direct MIT App Inventor bridge. This works even if detectMIT() did not run.
+  try {
+    if (window.AppInventor) {
+      window.AppInventor.setWebViewString('ACTION:PICK_IMAGE');
+      return;
+    }
+  } catch(e) {}
+
+  // Normal browser fallback
   document.getElementById('fileInput').click();
 }
 
@@ -953,6 +956,13 @@ function renderTips(cat) {
 // INIT
 // ═══════════════════════════════════════════════
 window.onload = () => {
+  // Let MIT App Inventor know the page loaded successfully.
+  try {
+    if (window.AppInventor) {
+      window.AppInventor.setWebViewString('HTML_LOADED');
+    }
+  } catch(e) {}
+
   renderWasteList('all');
   renderTips('all');
   detectMIT();
