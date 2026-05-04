@@ -185,6 +185,8 @@
   }
   .analyze-btn:active { background: var(--green-dark); }
   .analyze-btn:disabled { background: #aac9b8; cursor: not-allowed; }
+  .analyze-only-row { justify-content: center; }
+  .analyze-center { flex: 0 1 220px; max-width: 240px; width: 70%; }
 
   /* hidden canvas for snapping frames */
   #snapCanvas { display: none; }
@@ -341,7 +343,7 @@
 
   <!-- MIT App Inventor notice (shown when MIT bridge is detected) -->
   <div id="mit-notice">
-    📱 <strong>MIT AI Companion detected.</strong> Use the <strong>📤 Upload</strong> button — your App Inventor block sends the photo here. The shutter button uses the live camera stream.
+    📱 <strong>MIT AI Companion detected.</strong> Use the MIT Upload/Capture buttons below the WebViewer. The selected photo will appear here, then tap Analyze.
   </div>
 
   <!-- Camera / preview area -->
@@ -370,25 +372,12 @@
   <!-- Hidden canvas used to snap frames from the video -->
   <canvas id="snapCanvas"></canvas>
 
-  <p class="cam-hint" id="camHint">Tap ⚪ to capture · 📁 to upload</p>
+  <p class="cam-hint" id="camHint">Use the MIT Upload or Capture button, then tap Analyze</p>
 
-  <!-- Three-button camera action row -->
-  <div class="cam-action-row">
-
-    <!-- LEFT: Upload from gallery / MIT bridge -->
-    <button class="cam-side-btn" id="uploadBtn" onclick="handleUploadClick()">
-      📁 Upload
-    </button>
-    <!-- Hidden file input (works on desktop browsers) -->
+  <!-- MIT version: Upload/Capture are native MIT buttons. HTML only keeps Analyze. -->
+  <div class="cam-action-row analyze-only-row">
     <input type="file" accept="image/*" id="fileInput" style="display:none" onchange="handleFileUpload(event)">
-
-    <!-- CENTRE: Shutter / Retake -->
-    <button class="shutter-btn" id="shutterBtn" onclick="handleShutter()" title="Capture">
-      <div class="shutter-inner"></div>
-    </button>
-
-    <!-- RIGHT: Analyze -->
-    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeWaste()" disabled>
+    <button class="analyze-btn analyze-center" id="analyzeBtn" onclick="analyzeWaste()" disabled>
       🔍 Analyze
     </button>
   </div>
@@ -506,15 +495,8 @@ let mitPollStarted      = false;  // prevents duplicate MIT polling timers
 function detectMIT() {
   if (window.AppInventor) {
     isMITMode = true;
-    document.getElementById('mit-notice').style.display = 'block';
-
-    // In MIT App Inventor, the native Camera/ImagePicker buttons will be used.
-    // Hide only the HTML Upload and Capture buttons to avoid duplicate controls.
-    document.getElementById('uploadBtn').style.display = 'none';
-    document.getElementById('shutterBtn').style.display = 'none';
-
-    // Keep Analyze visible because the image preview and AI analysis still happen in HTML.
-    document.getElementById('analyzeBtn').style.flex = '1';
+    const notice = document.getElementById('mit-notice');
+    if (notice) notice.style.display = 'block';
     startMITPolling();
   }
 }
@@ -524,19 +506,24 @@ function startMITPolling() {
   mitPollStarted = true;
 
   setInterval(() => {
-  try {
-    const val = window.AppInventor.getWebViewString();
-    if (!val || val === window._lastMITVal) return;
+    try {
+      if (!window.AppInventor || !window.AppInventor.getWebViewString) return;
 
-    window._lastMITVal = val;
+      const val = window.AppInventor.getWebViewString();
+      if (!val || val === window._lastMITVal) return;
+      window._lastMITVal = val;
 
-    // ONLY accept BASE64
-    if (val.startsWith("data:image")) {
-      const b64 = val.split(',')[1];
-      receiveImage(b64);
-    }
-  } catch(e) {}
-}, 500);
+      // Ignore page/status messages. Only images should update the preview.
+      if (val.startsWith('PAGE:') || val === 'HTML_LOADED' || val === 'IMG_RECEIVED') return;
+
+      if (val.startsWith('data:image')) {
+        receiveImage(val);
+      } else if (val.length > 500) {
+        // Fallback in case MIT sends raw base64 without the data:image prefix.
+        receiveImage(val);
+      }
+    } catch(e) {}
+  }, 300);
 }
 
 // Load image from a local file path (MIT Camera gives us this)
@@ -587,7 +574,7 @@ function receiveImageFromPath(path) {
 function receiveImage(base64) {
   if (!base64) return;
 
-  // Accept either raw base64 or full data URL.
+  // Accept either raw base64 or a full data URL from MIT.
   if (base64.startsWith('data:image')) {
     base64 = base64.split(',')[1];
   }
@@ -598,21 +585,38 @@ function receiveImage(base64) {
   stopCamera();
 
   const prev = document.getElementById('uploaded-preview');
+  const placeholder = document.getElementById('cam-placeholder');
+  const overlay = document.getElementById('scanOverlay');
+  const liveVideo = document.getElementById('liveVideo');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const hint = document.getElementById('camHint');
+  const resultCard = document.getElementById('resultCard');
+  const resultContent = document.getElementById('resultContent');
+
   prev.onload = () => {
-    document.getElementById('cam-placeholder').style.display = 'none';
-    document.getElementById('scanOverlay').style.display = 'flex';
-    document.getElementById('liveVideo').classList.remove('active');
-    document.getElementById('analyzeBtn').disabled = false;
-    document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
-    document.getElementById('resultCard').classList.add('visible');
-    document.getElementById('resultContent').innerHTML =
-      '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+    if (placeholder) placeholder.style.display = 'none';
+    if (overlay) overlay.style.display = 'flex';
+    if (liveVideo) liveVideo.classList.remove('active');
+    if (analyzeBtn) analyzeBtn.disabled = false;
+    if (hint) hint.textContent = 'Image ready · tap Analyze';
+    if (resultCard) resultCard.classList.add('visible');
+    if (resultContent) {
+      resultContent.innerHTML = '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+    }
+
+    // Let MIT know the image was received, without leaving the huge base64 string as the current WebViewString.
+    try {
+      if (window.AppInventor) window.AppInventor.setWebViewString('IMG_RECEIVED');
+    } catch(e) {}
   };
+
   prev.onerror = () => {
-    document.getElementById('resultCard').classList.add('visible');
-    document.getElementById('resultContent').innerHTML =
-      '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. Try another photo.</div>';
+    if (resultCard) resultCard.classList.add('visible');
+    if (resultContent) {
+      resultContent.innerHTML = '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. Try another photo.</div>';
+    }
   };
+
   prev.src = dataUrl;
   prev.classList.add('visible');
 }
@@ -770,7 +774,10 @@ async function callOpenRouter(model, imgBase64) {
 
 async function analyzeWaste() {
   if (!selectedImageBase64) {
-    handleUploadClick();
+    const resultCard = document.getElementById('resultCard');
+    const resultContent = document.getElementById('resultContent');
+    resultCard.classList.add('visible');
+    resultContent.innerHTML = '<div style="color:var(--orange);font-size:13px;">Please use the MIT Upload or Capture button first.</div>';
     return;
   }
   if (!apiKey) { openSettings(); return; }
@@ -970,7 +977,7 @@ window.onload = () => {
     if (window.AppInventor) {
       isMITMode = true;
       startMITPolling();
-      window.AppInventor.setWebViewString('HTML_LOADED');
+      window.AppInventor.setWebViewString('PAGE:home');
     }
   } catch(e) {}
 
