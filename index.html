@@ -510,8 +510,8 @@ function detectMIT() {
     document.getElementById('mit-notice').style.display = 'block';
     // In MIT mode the shutter cannot use getUserMedia, so relabel it
     // Hide the in-HTML capture and upload buttons — App Inventor's own buttons handle this
-    document.getElementById('shutterBtn').style.display = 'none';
-    document.getElementById('uploadBtn').style.display  = 'none';
+    //document.getElementById('shutterBtn').style.display = 'none';
+    //document.getElementById('uploadBtn').style.display  = 'none';
     // Expand the Analyze button to fill the full row
     document.getElementById('analyzeBtn').style.flex = '1';
     startMITPolling();
@@ -592,20 +592,25 @@ function receiveImageFromPath(path) {
 
 // ─── Central function: load base64 image into preview ─────
 function receiveImage(base64) {
+  selectedImageBase64 = base64;
   const dataUrl = "data:image/jpeg;base64," + base64;
 
-  const prev = document.getElementById('uploaded-preview');
+  stopCamera();
 
+  const prev = document.getElementById('uploaded-preview');
   prev.src = dataUrl;
   prev.classList.add('visible');
 
   document.getElementById('cam-placeholder').style.display = 'none';
   document.getElementById('scanOverlay').style.display = 'flex';
+  document.getElementById('liveVideo').classList.remove('active');
 
   document.getElementById('analyzeBtn').disabled = false;
   document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
 
   document.getElementById('resultCard').classList.add('visible');
+  document.getElementById('resultContent').innerHTML =
+    '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
 }
 
   // Stop live camera if running
