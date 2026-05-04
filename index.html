@@ -649,40 +649,32 @@ function stopCamera() {
 
 // ─── Shutter button: snap a frame from the live video ─────
 function handleShutter() {
-  if (isMITMode) {
-    // Signal App Inventor to open the Camera.
-    // In your MIT blocks: when WebViewer.WebViewStringChange → if value = "ACTION:TAKE_PHOTO" → call Camera1.TakePicture
-    // After capture: set WebViewer.WebViewString = Camera1.Image
-    try { window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO'); } catch(e) {}
+  // Check LIVE every time button is tapped — not just on page load
+  if (typeof window.AppInventor !== 'undefined') {
+    isMITMode = true;
+    try { 
+      window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO'); 
+    } catch(e) {}
     return;
   }
-
+  // Normal browser flow below
   const vid = document.getElementById('liveVideo');
-
-  // If there's a captured/uploaded image already, retake
   if (selectedImageBase64 && !cameraStream) {
     resetCameraView();
     startCamera();
     return;
   }
-
   if (!cameraStream || vid.readyState < 2) {
-    // Camera not yet started — start it
     startCamera();
     return;
   }
-
-  // Snap the current frame
   const canvas = document.getElementById('snapCanvas');
   canvas.width  = vid.videoWidth  || 640;
   canvas.height = vid.videoHeight || 480;
   canvas.getContext('2d').drawImage(vid, 0, 0, canvas.width, canvas.height);
-
   const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
   const b64     = dataUrl.split(',')[1];
   receiveImage(b64);
-
-  // Change shutter to "retake" mode
   document.getElementById('shutterBtn').classList.add('retake');
   document.getElementById('camHint').textContent = 'Tap ⚪ to retake · Analyze when ready';
 }
@@ -706,11 +698,12 @@ function resetCameraView() {
 // Instead, MIT blocks push base64 via WebViewString (polled above).
 // ═══════════════════════════════════════════════
 function handleUploadClick() {
-  if (isMITMode) {
-    // Signal App Inventor to open the ImagePicker.
-    // In your MIT blocks: when WebViewer.WebViewStringChange → if value = "ACTION:PICK_IMAGE" → call ImagePicker1.Open
-    // After the user picks: set WebViewer.WebViewString = ImagePicker1.Selection  (or Camera1.Image)
-    try { window.AppInventor.setWebViewString('ACTION:PICK_IMAGE'); } catch(e) {}
+  // Check LIVE every time
+  if (typeof window.AppInventor !== 'undefined') {
+    isMITMode = true;
+    try { 
+      window.AppInventor.setWebViewString('ACTION:PICK_IMAGE'); 
+    } catch(e) {}
     return;
   }
   document.getElementById('fileInput').click();
