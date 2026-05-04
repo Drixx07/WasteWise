@@ -341,7 +341,7 @@
 
   <!-- MIT App Inventor notice (shown when MIT bridge is detected) -->
   <div id="mit-notice">
-    📱 <strong>MIT App Inventor mode detected.</strong> Use Upload or the green camera button. App Inventor will open the native picker/camera.
+    📱 <strong>MIT AI Companion detected.</strong> Use the <strong>📤 Upload</strong> button — your App Inventor block sends the photo here. The shutter button uses the live camera stream.
   </div>
 
   <!-- Camera / preview area -->
@@ -460,74 +460,523 @@
 </div>
 
 <script>
-// ====== MIT BRIDGE ======
-function sendToMIT(action) {
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const WASTE_DATA = [
+  { id:'bio',    emoji:'🍃', label:'Biodegradable',     sub:'Food, leaves, paper',           detail:'Organic waste that decomposes naturally. Place in the GREEN bin. Includes food scraps, garden waste, and untreated paper products.',                                    color:'var(--green)',  bg:'var(--green-light)',  badge:'Green Bin',       badgeBg:'#d1fae5', badgeColor:'#065f46' },
+  { id:'nonbio', emoji:'🧱', label:'Non-Biodegradable', sub:'Plastics, metals, glass',        detail:'Materials that do not decompose naturally. Place in the BLUE bin. Includes styrofoam, synthetic textiles, and treated plastics.',                                      color:'var(--blue)',   bg:'var(--blue-light)',   badge:'Blue Bin',        badgeBg:'#dbeafe', badgeColor:'#1e40af' },
+  { id:'rec',    emoji:'♻️', label:'Recyclable',         sub:'Clean bottles, cans, cardboard', detail:'Materials that can be processed and reused. Rinse before placing in recycling. Includes glass bottles, aluminum cans, and clean cardboard.',                          color:'#0369a1',       bg:'#e0f2fe',             badge:'Recycle Bin',     badgeBg:'#bae6fd', badgeColor:'#075985' },
+  { id:'res',    emoji:'🗑️', label:'Residual Waste',     sub:'Soiled packaging, diapers',      detail:'Waste that cannot be recycled or composted. Placed in BLACK bag for sanitary landfill. Keep separate from recyclables to avoid contamination.',                      color:'var(--orange)', bg:'var(--orange-light)', badge:'Black Bag',       badgeBg:'#fed7aa', badgeColor:'#9a3412' },
+  { id:'haz',    emoji:'⚠️', label:'Hazardous Waste',    sub:'Batteries, chemicals, e-waste',  detail:'Dangerous materials requiring special disposal. NEVER mix with regular trash. Bring to designated drop-off points (barangay hall, LGU centers).',                    color:'var(--red)',    bg:'var(--red-light)',    badge:'Special Disposal',badgeBg:'#fecaca', badgeColor:'#991b1b' },
+];
+
+const TIPS_DATA = [
+  { cat:'home',      num:'01', text:'Always rinse containers before placing them in the recycling bin to avoid contamination.' },
+  { cat:'home',      num:'02', text:'Flatten cardboard boxes to save space in your recycling bin and make collection easier.' },
+  { cat:'home',      num:'03', text:'Never mix hazardous waste with regular garbage. Bring batteries and electronics to designated drop-off points.' },
+  { cat:'home',      num:'04', text:'Compost food scraps like fruit peels and coffee grounds to reduce biodegradable waste in landfills.' },
+  { cat:'home',      num:'05', text:'Use reusable bags, bottles, and containers to drastically cut your plastic footprint.' },
+  { cat:'work',      num:'06', text:'Set up clearly labeled bins at your office: paper, plastic, and general waste at minimum.' },
+  { cat:'work',      num:'07', text:'Print documents double-sided and use digital alternatives where possible to reduce paper waste.' },
+  { cat:'work',      num:'08', text:'Encourage your office to join e-waste drives for proper disposal of old electronics and batteries.' },
+  { cat:'community', num:'09', text:'Participate in barangay cleanup drives and report illegal dumping to your local LGU.' },
+  { cat:'community', num:'10', text:'Share waste segregation knowledge with neighbors — proper segregation starts at home and spreads outward.' },
+  { cat:'community', num:'11', text:'Support local junk shops and materials recovery facilities (MRFs) by segregating clean recyclables.' },
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentScreen       = 'home';
+let selectedImageBase64 = null;   // base64 string (no data-URL prefix)
+let apiKey              = localStorage.getItem('openrouter_key') || '';
+let cameraStream        = null;   // MediaStream from getUserMedia
+let isMITMode           = false;  // true when running inside MIT AI Companion WebViewer
+let mitPollStarted      = false;  // prevents duplicate MIT polling timers
+
+// ═══════════════════════════════════════════════
+// MIT AI COMPANION DETECTION & BRIDGE
+// ═══════════════════════════════════════════════
+// MIT App Inventor's WebViewer exposes window.AppInventor.
+// To send an image FROM App Inventor TO this page, the App Inventor
+// block calls:  WebViewer.WebViewString = "<base64-jpeg-data>"
+// This page polls getWebViewString() every 500 ms and picks it up.
+// ═══════════════════════════════════════════════
+function detectMIT() {
+  if (window.AppInventor) {
+    isMITMode = true;
+    document.getElementById('mit-notice').style.display = 'block';
+
+    // In MIT App Inventor, the native Camera/ImagePicker buttons will be used.
+    // Hide only the HTML Upload and Capture buttons to avoid duplicate controls.
+    document.getElementById('uploadBtn').style.display = 'none';
+    document.getElementById('shutterBtn').style.display = 'none';
+
+    // Keep Analyze visible because the image preview and AI analysis still happen in HTML.
+    document.getElementById('analyzeBtn').style.flex = '1';
+    startMITPolling();
+  }
+}
+
+function startMITPolling() {
+  if (mitPollStarted) return;
+  mitPollStarted = true;
+
+  setInterval(() => {
   try {
-    if (window.AppInventor) {
-      window.AppInventor.setWebViewString(action);
-      return true;
+    const val = window.AppInventor.getWebViewString();
+    if (!val || val === window._lastMITVal) return;
+
+    window._lastMITVal = val;
+
+    // ONLY accept BASE64
+    if (val.startsWith("data:image")) {
+      const b64 = val.split(',')[1];
+      receiveImage(b64);
     }
   } catch(e) {}
-  return false;
+}, 500);
 }
 
-// ====== BUTTON HANDLERS ======
-function handleUploadClick() {
-  if (sendToMIT("ACTION:PICK_IMAGE")) return;
-  document.getElementById('fileInput').click(); // fallback browser
-}
-
-function handleShutter() {
-  if (sendToMIT("ACTION:TAKE_PHOTO")) return;
-  startCamera(); // fallback browser
-}
-
-// ====== RECEIVE IMAGE FROM MIT ======
-function receiveImage(base64) {
-  const dataUrl = "data:image/jpeg;base64," + base64;
-
+// Load image from a local file path (MIT Camera gives us this)
+// Draws it onto a canvas to extract base64 for the AI API call
+function receiveImageFromPath(path) {
+  // Show the image directly — MIT Companion's WebView can load local file:// paths
+  const src = (path.startsWith('file://') || path.startsWith('content://')) ? path : 'file://' + path;
   const prev = document.getElementById('uploaded-preview');
-  prev.src = dataUrl;
+
+  stopCamera();
+  document.getElementById('cam-placeholder').style.display = 'none';
+  document.getElementById('scanOverlay').style.display    = 'flex';
+  document.getElementById('liveVideo').classList.remove('active');
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
+  document.getElementById('resultCard').classList.add('visible');
+  document.getElementById('resultContent').innerHTML =
+    '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+
+  prev.src = src;
   prev.classList.add('visible');
 
-  document.getElementById('cam-placeholder').style.display = 'none';
-  document.getElementById('scanOverlay').style.display = 'flex';
-  document.getElementById('analyzeBtn').disabled = false;
+  // Convert to base64 via canvas so we can send it to the AI API
+  const img = new window.Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    // Scale down large photos to keep API payload reasonable
+    const MAX = 1024;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > MAX || h > MAX) {
+      if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+      else        { w = Math.round(w * MAX / h); h = MAX; }
+    }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    selectedImageBase64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+  };
+  img.onerror = () => {
+    // If canvas loading fails (sandboxing), still allow Analyze with path-based src
+    // We'll try sending the image as a URL directly
+    selectedImageBase64 = '__path__' + src;
+  };
+  img.src = src;
 }
 
-// ====== CAMERA (BROWSER ONLY FALLBACK) ======
-let cameraStream = null;
+// ─── Central function: load base64 image into preview ─────
+function receiveImage(base64) {
+  if (!base64) return;
 
+  // Accept either raw base64 or full data URL.
+  if (base64.startsWith('data:image')) {
+    base64 = base64.split(',')[1];
+  }
+
+  selectedImageBase64 = base64;
+  const dataUrl = 'data:image/jpeg;base64,' + base64;
+
+  stopCamera();
+
+  const prev = document.getElementById('uploaded-preview');
+  prev.onload = () => {
+    document.getElementById('cam-placeholder').style.display = 'none';
+    document.getElementById('scanOverlay').style.display = 'flex';
+    document.getElementById('liveVideo').classList.remove('active');
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultContent').innerHTML =
+      '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+  };
+  prev.onerror = () => {
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultContent').innerHTML =
+      '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. Try another photo.</div>';
+  };
+  prev.src = dataUrl;
+  prev.classList.add('visible');
+}
+
+// ═══════════════════════════════════════════════
+// CAMERA (getUserMedia)
+// ═══════════════════════════════════════════════
 async function startCamera() {
+  if (isMITMode) return; // MIT WebViewer can't access getUserMedia
+  if (cameraStream) return; // already running
+
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
+      audio: false
+    });
     cameraStream = stream;
     const vid = document.getElementById('liveVideo');
     vid.srcObject = stream;
     vid.classList.add('active');
-  } catch (e) {
-    console.log("Camera not available");
+    document.getElementById('cam-placeholder').style.display = 'none';
+    document.getElementById('scanOverlay').style.display    = 'flex';
+    document.getElementById('camHint').textContent = 'Tap ⚪ to capture · 📁 to upload';
+  } catch (err) {
+    console.warn('Camera access denied or unavailable:', err);
+    document.getElementById('cam-placeholder').style.display = 'flex';
+    document.getElementById('cam-placeholder').querySelector('p').innerHTML =
+      'Camera unavailable.<br>Use 📁 Upload instead.';
   }
 }
 
-// ====== FILE INPUT (BROWSER ONLY) ======
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  const vid = document.getElementById('liveVideo');
+  vid.srcObject = null;
+  vid.classList.remove('active');
+}
+
+// ─── Shutter button: snap a frame from the live video ─────
+function handleShutter() {
+  try {
+    if (window.AppInventor) {
+      window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO');
+      return;
+    }
+  } catch(e) {}
+
+  const vid = document.getElementById('liveVideo');
+
+  if (selectedImageBase64 && !cameraStream) {
+    resetCameraView();
+    startCamera();
+    return;
+  }
+
+  if (!cameraStream || vid.readyState < 2) {
+    startCamera();
+    return;
+  }
+
+  const canvas = document.getElementById('snapCanvas');
+  canvas.width  = vid.videoWidth  || 640;
+  canvas.height = vid.videoHeight || 480;
+  canvas.getContext('2d').drawImage(vid, 0, 0, canvas.width, canvas.height);
+
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  const b64     = dataUrl.split(',')[1];
+  receiveImage(b64);
+
+  document.getElementById('shutterBtn').classList.add('retake');
+  document.getElementById('camHint').textContent = 'Tap ⚪ to retake · Analyze when ready';
+}
+function resetCameraView() {
+  selectedImageBase64 = null;
+  const prev = document.getElementById('uploaded-preview');
+  prev.src = '';
+  prev.classList.remove('visible');
+  document.getElementById('cam-placeholder').style.display = 'none';
+  document.getElementById('scanOverlay').style.display = 'none';
+  document.getElementById('shutterBtn').classList.remove('retake');
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('camHint').textContent = 'Tap ⚪ to capture · 📁 to upload';
+}
+
+// ═══════════════════════════════════════════════
+// FILE UPLOAD (desktop browser fallback)
+// In MIT AI Companion, <input type="file"> does NOT work.
+// Instead, MIT blocks push base64 via WebViewString (polled above).
+// ═══════════════════════════════════════════════
+function handleUploadClick() {
+  try {
+    if (window.AppInventor) {
+      window.AppInventor.setWebViewString('ACTION:PICK_IMAGE');
+      return;
+    }
+  } catch(e) {}
+  document.getElementById('fileInput').click();
+}
 function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = (ev) => {
     const b64 = ev.target.result.split(',')[1];
     receiveImage(b64);
   };
   reader.readAsDataURL(file);
+  // Reset so the same file can be re-selected
+  e.target.value = '';
 }
 
-// ====== SIMPLE NAV ======
+// ═══════════════════════════════════════════════
+// AI ANALYSIS
+// ═══════════════════════════════════════════════
+const FREE_MODELS = [
+  'google/gemini-2.5-flash-preview:free',
+  'google/gemini-2.0-flash-001',
+  'meta-llama/llama-4-maverick:free',
+  'mistralai/mistral-small-3.1-24b-instruct:free',
+];
+
+const WASTE_PROMPT =
+  'You are WasteWise, a waste segregation expert for the Philippines (RA 9003). ' +
+  'Analyze the image and respond ONLY with a JSON object (no markdown, no explanation): ' +
+  '{"item":"name","category":"Biodegradable|Non-Biodegradable|Recyclable|Residual Waste|Hazardous Waste",' +
+  '"bin":"bin color/type","confidence":"High|Medium|Low","disposal":"1-2 sentence instruction","tip":"one eco-tip"}';
+
+async function callOpenRouter(model, imgBase64) {
+  const cleanKey = apiKey.replace(/[^\x20-\x7E]/g, '').trim();
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + cleanKey,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': window.location.href,
+      'X-Title': 'WasteWise'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'user', content: [
+        { type: 'text', text: WASTE_PROMPT },
+        { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + imgBase64 } }
+      ]}],
+      max_tokens: 400
+    })
+  });
+  const d = await res.json();
+  if (d.error) throw new Error(d.error.message || JSON.stringify(d.error));
+  return d;
+}
+
+async function analyzeWaste() {
+  if (!selectedImageBase64) {
+    handleUploadClick();
+    return;
+  }
+  if (!apiKey) { openSettings(); return; }
+
+  const resultCard    = document.getElementById('resultCard');
+  const resultContent = document.getElementById('resultContent');
+  resultCard.classList.add('visible');
+  document.getElementById('analyzeBtn').disabled = true;
+
+  // __path__ means canvas couldn't extract base64 (sandboxing) — not much we can do
+  if (selectedImageBase64.startsWith('__path__')) {
+    resultContent.innerHTML =
+      '<div style="color:var(--orange);font-size:13px;">⚠️ Could not read the image file directly.<br>' +
+      'In your App Inventor blocks, try connecting an <strong>ImagePicker</strong> instead of Camera, ' +
+      'or ask for help converting the camera output to base64.</div>';
+    document.getElementById('analyzeBtn').disabled = false;
+    return;
+  }
+
+  let data = null, lastErr = null;
+
+  for (let i = 0; i < FREE_MODELS.length; i++) {
+    const model     = FREE_MODELS[i];
+    const shortName = model.split('/')[1] || model;
+    resultContent.innerHTML =
+      '<div class="analyzing"><div class="spinner"></div><span>Analyzing with ' + shortName + '…</span></div>';
+    try {
+      data = await callOpenRouter(model, selectedImageBase64);
+      break;
+    } catch (e) {
+      lastErr = e;
+      console.warn('Model failed:', model, e.message);
+    }
+  }
+
+  document.getElementById('analyzeBtn').disabled = false;
+
+  if (!data) {
+    resultContent.innerHTML =
+      '<div style="color:var(--red);font-size:13px;">⚠️ All models unavailable.<br>' +
+      (lastErr ? lastErr.message : '') +
+      '<br><br><span style="color:var(--text-sub);">Check your API key in ⚙️ Settings.</span></div>';
+    return;
+  }
+
+  try {
+    const text  = (data.choices?.[0]?.message?.content) || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const p     = JSON.parse(clean);
+
+    const catColors = {
+      'Biodegradable':     { bg: 'var(--green-light)',  color: 'var(--green)'  },
+      'Non-Biodegradable': { bg: 'var(--blue-light)',   color: 'var(--blue)'   },
+      'Recyclable':        { bg: '#e0f2fe',              color: '#0369a1'       },
+      'Residual Waste':    { bg: 'var(--orange-light)', color: 'var(--orange)' },
+      'Hazardous Waste':   { bg: 'var(--red-light)',    color: 'var(--red)'    },
+    };
+    const cc = catColors[p.category] || { bg: '#f3f4f6', color: '#374151' };
+
+    resultContent.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+        '<div class="result-category" style="background:' + cc.bg + ';color:' + cc.color + ';">♻️ ' + p.category + '</div>' +
+        '<span style="font-size:12px;color:var(--text-sub);font-weight:600;">' + (p.confidence || '') + ' confidence</span>' +
+      '</div>' +
+      '<div style="font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:6px;">' + p.item + '</div>' +
+      '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px;">🗑️ ' + p.bin + '</div>' +
+      '<div class="result-description" style="margin-bottom:10px;">' + p.disposal + '</div>' +
+      '<div style="background:var(--green-light);border-radius:12px;padding:12px;font-size:13px;color:var(--green-dark);"><strong>💡 Tip:</strong> ' + p.tip + '</div>';
+  } catch (e) {
+    resultContent.innerHTML =
+      '<div style="color:var(--red);font-size:13px;">⚠️ Could not read AI response. Try again.</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SCREEN SWITCHING
+// ═══════════════════════════════════════════════
 function switchScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  currentScreen = name;
+
+  // Tell MIT App Inventor which page is currently open.
+  // This lets MIT show native Upload/Capture buttons only on the Camera page.
+  try {
+    if (window.AppInventor) {
+      window.AppInventor.setWebViewString('PAGE:' + name);
+    }
+  } catch(e) {}
+
+  if (name === 'camera') {
+    // Auto-start camera when entering screen (skip if MIT or already streaming)
+    if (!isMITMode && !cameraStream && !selectedImageBase64) {
+      startCamera();
+    }
+  } else {
+    // Stop camera when leaving the camera screen to save battery
+    stopCamera();
+  }
 }
+
+// ═══════════════════════════════════════════════
+// API KEY MODAL
+// ═══════════════════════════════════════════════
+function openSettings() {
+  document.getElementById('apiKeyInput').value = apiKey;
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+function saveApiKey() {
+  const raw = document.getElementById('apiKeyInput').value;
+  const val = raw.replace(/[^\x20-\x7E]/g, '').trim();
+  if (val) {
+    apiKey = val;
+    localStorage.setItem('openrouter_key', val);
+    document.getElementById('apiKeyInput').value = val;
+  }
+  closeSettings();
+}
+
+// ═══════════════════════════════════════════════
+// CLASSIFICATION
+// ═══════════════════════════════════════════════
+function filterWaste(cat, el) {
+  document.querySelectorAll('#classifyChips .chip').forEach(c => { c.className = 'chip'; });
+  const classMap = { all:'active-all', bio:'active-bio', nonbio:'active-nonbio', rec:'active-rec', res:'active-res', haz:'active-haz' };
+  el.classList.add(classMap[cat] || 'active-all');
+  renderWasteList(cat);
+}
+
+function renderWasteList(cat) {
+  const list  = document.getElementById('wasteList');
+  const items = cat === 'all' ? WASTE_DATA : WASTE_DATA.filter(w => w.id === cat);
+  list.innerHTML = items.map(w => `
+    <div class="waste-card ${cat === w.id ? 'selected' : ''}" onclick="toggleWasteCard(this)">
+      <div class="waste-icon-wrap" style="background:${w.bg};">${w.emoji}</div>
+      <div class="waste-info">
+        <h3>${w.label}</h3>
+        <div class="sub">${w.sub}</div>
+        <div class="badge" style="background:${w.badgeBg};color:${w.badgeColor};">${w.badge}</div>
+        <div class="detail" style="display:none;">${w.detail}</div>
+      </div>
+    </div>
+  `).join('');
+  if (cat !== 'all') {
+    const first = list.querySelector('.waste-card');
+    if (first) { first.classList.add('selected'); first.querySelector('.detail').style.display = 'block'; }
+  }
+}
+
+function toggleWasteCard(el) {
+  const detail = el.querySelector('.detail');
+  const isOpen = detail.style.display === 'block';
+  document.querySelectorAll('.waste-card').forEach(c => {
+    c.classList.remove('selected');
+    c.querySelector('.detail').style.display = 'none';
+  });
+  if (!isOpen) { el.classList.add('selected'); detail.style.display = 'block'; }
+}
+
+// ═══════════════════════════════════════════════
+// TIPS
+// ═══════════════════════════════════════════════
+function filterTips(cat, el) {
+  document.querySelectorAll('.tip-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTips(cat);
+}
+
+function renderTips(cat) {
+  const list  = document.getElementById('tipsList');
+  const items = cat === 'all' ? TIPS_DATA : TIPS_DATA.filter(t => t.cat === cat);
+  list.innerHTML = items.map(t => `
+    <div class="tip-card">
+      <div class="tip-meta">TIP ${t.num} · ${t.cat.toUpperCase()}</div>
+      <div class="tip-text">${t.text}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.onload = () => {
+  renderWasteList('all');
+  renderTips('all');
+  detectMIT();
+  setTimeout(detectMIT, 500);
+  setTimeout(detectMIT, 1500);
+
+  try {
+    if (window.AppInventor) {
+      isMITMode = true;
+      startMITPolling();
+      window.AppInventor.setWebViewString('HTML_LOADED');
+    }
+  } catch(e) {}
+
+  // Do not auto-open the API key modal. It can look like the app is unclickable.
+  // Users can open it manually with the settings gear.
+};
 </script>
 </body>
 </html>
