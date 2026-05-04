@@ -548,7 +548,9 @@ function startMITPolling() {
 // Draws it onto a canvas to extract base64 for the AI API call
 function receiveImageFromPath(path) {
   // Show the image directly — MIT Companion's WebView can load local file:// paths
-  const src = path.startsWith('file://') ? path : 'file://' + path;
+  const src = path.startsWith('file://') || path.startsWith('content://') 
+  ? path 
+  : 'file://' + path;
   const prev = document.getElementById('uploaded-preview');
 
   stopCamera();
