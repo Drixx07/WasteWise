@@ -341,7 +341,7 @@
 
   <!-- MIT App Inventor notice (shown when MIT bridge is detected) -->
   <div id="mit-notice">
-    📱 <strong>MIT AI Companion detected.</strong> Use <strong>Upload</strong> or the green camera button. MIT will open the native gallery/camera, then send the photo back here.
+    📱 <strong>MIT App Inventor mode detected.</strong> Use Upload or the green camera button. App Inventor will open the native picker/camera.
   </div>
 
   <!-- Camera / preview area -->
@@ -504,36 +504,34 @@ let mitPollStarted      = false;  // prevents duplicate MIT polling timers
 // This page polls getWebViewString() every 500 ms and picks it up.
 // ═══════════════════════════════════════════════
 function detectMIT() {
-  try {
-    if (window.AppInventor) {
-      isMITMode = true;
-      document.getElementById('mit-notice').style.display = 'block';
-
-      // Keep the HTML buttons visible so the UI stays the same.
-      // The buttons will send ACTION commands to MIT App Inventor.
-      document.getElementById('shutterBtn').style.display = 'flex';
-      document.getElementById('uploadBtn').style.display = 'flex';
-
-      startMITPolling();
+  if (typeof window.AppInventor !== 'undefined') {
+    isMITMode = true;
+    const notice = document.getElementById('mit-notice');
+    if (notice) {
+      notice.style.display = 'block';
+      notice.innerHTML = '📱 <strong>MIT App Inventor mode detected.</strong> Use the Upload or Camera button. App Inventor will open the native picker/camera.';
     }
-  } catch(e) {}
+    // Keep HTML buttons visible. They send commands to App Inventor.
+    const shutter = document.getElementById('shutterBtn');
+    const upload = document.getElementById('uploadBtn');
+    if (shutter) shutter.style.display = 'flex';
+    if (upload) upload.style.display = 'flex';
+  }
 }
 
 function startMITPolling() {
+  // Fallback only. Your CustomWebView setup should use EvaluateJavaScript("receiveImage(...)").
   if (mitPollStarted) return;
+  if (typeof window.AppInventor === 'undefined' || typeof window.AppInventor.getWebViewString !== 'function') return;
   mitPollStarted = true;
 
   setInterval(() => {
     try {
-      if (!window.AppInventor) return;
       const val = window.AppInventor.getWebViewString();
       if (!val || val === window._lastMITVal) return;
-
       window._lastMITVal = val;
 
-      if (val.startsWith("data:image")) {
-        receiveImage(val);
-      } else if (val.length > 500 && !val.startsWith("ACTION:") && val !== "HTML_LOADED") {
+      if (val.startsWith('data:image')) {
         receiveImage(val);
       }
     } catch(e) {}
@@ -588,9 +586,12 @@ function receiveImageFromPath(path) {
 function receiveImage(base64) {
   if (!base64) return;
 
+  // Accept raw Base64 or a full data URL from App Inventor.
+  base64 = String(base64).trim().replace(/\s/g, '');
   if (base64.startsWith('data:image')) {
-    base64 = base64.split(',')[1];
+    base64 = base64.split(',')[1] || '';
   }
+  if (!base64) return;
 
   selectedImageBase64 = base64;
   const dataUrl = 'data:image/jpeg;base64,' + base64;
@@ -598,23 +599,23 @@ function receiveImage(base64) {
   stopCamera();
 
   const prev = document.getElementById('uploaded-preview');
+  prev.onload = () => {
+    document.getElementById('cam-placeholder').style.display = 'none';
+    document.getElementById('scanOverlay').style.display = 'flex';
+    document.getElementById('liveVideo').classList.remove('active');
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultContent').innerHTML =
+      '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+  };
   prev.onerror = () => {
     document.getElementById('resultCard').classList.add('visible');
     document.getElementById('resultContent').innerHTML =
       '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. Try another photo.</div>';
   };
-
   prev.src = dataUrl;
   prev.classList.add('visible');
-
-  document.getElementById('cam-placeholder').style.display = 'none';
-  document.getElementById('scanOverlay').style.display = 'flex';
-  document.getElementById('liveVideo').classList.remove('active');
-  document.getElementById('analyzeBtn').disabled = false;
-  document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
-  document.getElementById('resultCard').classList.add('visible');
-  document.getElementById('resultContent').innerHTML =
-    '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
 }
 
 // ═══════════════════════════════════════════════
@@ -656,18 +657,18 @@ function stopCamera() {
 
 // ─── Shutter button: snap a frame from the live video ─────
 function handleShutter() {
+  // MIT / CustomWebView mode: send command to App Inventor blocks.
   try {
-    if (window.AppInventor) {
+    if (window.AppInventor && typeof window.AppInventor.setWebViewString === 'function') {
       isMITMode = true;
-      startMITPolling();
       window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO');
       return;
     }
   } catch(e) {}
 
+  // Normal browser mode: use live camera stream.
   const vid = document.getElementById('liveVideo');
 
-  // If there's a captured/uploaded image already, retake
   if (selectedImageBase64 && !cameraStream) {
     resetCameraView();
     startCamera();
@@ -675,22 +676,19 @@ function handleShutter() {
   }
 
   if (!cameraStream || vid.readyState < 2) {
-    // Camera not yet started — start it
     startCamera();
     return;
   }
 
-  // Snap the current frame
   const canvas = document.getElementById('snapCanvas');
   canvas.width  = vid.videoWidth  || 640;
   canvas.height = vid.videoHeight || 480;
   canvas.getContext('2d').drawImage(vid, 0, 0, canvas.width, canvas.height);
 
   const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-  const b64     = dataUrl.split(',')[1];
+  const b64 = dataUrl.split(',')[1];
   receiveImage(b64);
 
-  // Change shutter to "retake" mode
   document.getElementById('shutterBtn').classList.add('retake');
   document.getElementById('camHint').textContent = 'Tap ⚪ to retake · Analyze when ready';
 }
@@ -713,14 +711,16 @@ function resetCameraView() {
 // Instead, MIT blocks push base64 via WebViewString (polled above).
 // ═══════════════════════════════════════════════
 function handleUploadClick() {
+  // MIT / CustomWebView mode: send command to App Inventor blocks.
   try {
-    if (window.AppInventor) {
+    if (window.AppInventor && typeof window.AppInventor.setWebViewString === 'function') {
       isMITMode = true;
-      startMITPolling();
       window.AppInventor.setWebViewString('ACTION:PICK_IMAGE');
       return;
     }
   } catch(e) {}
+
+  // Normal browser mode.
   document.getElementById('fileInput').click();
 }
 function handleFileUpload(e) {
@@ -962,20 +962,12 @@ function renderTips(cat) {
 window.onload = () => {
   renderWasteList('all');
   renderTips('all');
+
   detectMIT();
   setTimeout(detectMIT, 500);
   setTimeout(detectMIT, 1500);
 
-  try {
-    if (window.AppInventor) {
-      isMITMode = true;
-      startMITPolling();
-      window.AppInventor.setWebViewString('HTML_LOADED');
-    }
-  } catch(e) {}
-
-  // Do not auto-open the API key modal. It can look like the app is unclickable.
-  // Users can open it manually with the settings gear.
+  // No auto API-key popup. Open it manually using the settings gear.
 };
 </script>
 </body>
