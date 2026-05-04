@@ -341,7 +341,7 @@
 
   <!-- MIT App Inventor notice (shown when MIT bridge is detected) -->
   <div id="mit-notice">
-    📱 <strong>MIT AI Companion detected.</strong> Use the <strong>📤 Upload</strong> button — your App Inventor block sends the photo here. The shutter button uses the live camera stream.
+    📱 <strong>MIT AI Companion detected.</strong> Use <strong>📤 Upload</strong> or the green capture button. MIT App Inventor opens the native gallery/camera, then sends the photo back here.
   </div>
 
   <!-- Camera / preview area -->
@@ -504,16 +504,15 @@ let mitPollStarted      = false;  // prevents duplicate MIT polling timers
 // This page polls getWebViewString() every 500 ms and picks it up.
 // ═══════════════════════════════════════════════
 function detectMIT() {
-  // window.AppInventor is injected by the AI Companion WebViewer
-  if (typeof window.AppInventor !== 'undefined') {
+  if (window.AppInventor) {
     isMITMode = true;
     document.getElementById('mit-notice').style.display = 'block';
-    // In MIT mode the shutter cannot use getUserMedia, so relabel it
-    // Hide the in-HTML capture and upload buttons — App Inventor's own buttons handle this
-    //document.getElementById('shutterBtn').style.display = 'none';
-    //document.getElementById('uploadBtn').style.display  = 'none';
-    // Expand the Analyze button to fill the full row
-    document.getElementById('analyzeBtn').style.flex = '1';
+
+    // Keep Upload and Capture buttons visible.
+    // In MIT mode these buttons send commands to App Inventor blocks.
+    document.getElementById('shutterBtn').style.display = '';
+    document.getElementById('uploadBtn').style.display = '';
+
     startMITPolling();
   }
 }
@@ -524,25 +523,25 @@ function startMITPolling() {
 
   setInterval(() => {
     try {
-      if (typeof window.AppInventor === 'undefined') return;
-
       const val = window.AppInventor.getWebViewString();
       if (!val || val === window._lastMITVal) return;
+
       window._lastMITVal = val;
 
-      // Ignore command/status messages. These are for MIT blocks, not images.
+      // Ignore command/status messages.
       if (val === 'ACTION:TAKE_PHOTO' || val === 'ACTION:PICK_IMAGE' || val === 'HTML_LOADED') return;
 
+      // Accept full data URL from MIT blocks.
       if (val.startsWith('data:image')) {
-        receiveImage(val.split(',')[1]);
-      } else if (val.length > 500 && !val.startsWith('/') && !val.startsWith('file://') && !val.startsWith('content://')) {
         receiveImage(val);
-      } else if (val.startsWith('/') || val.startsWith('file://') || val.startsWith('content://')) {
-        receiveImageFromPath(val);
+        return;
       }
-    } catch(e) {
-      console.warn('MIT polling error:', e);
-    }
+
+      // Accept raw base64 from MIT blocks.
+      if (val.length > 500) {
+        receiveImage(val);
+      }
+    } catch(e) {}
   }, 500);
 }
 
@@ -977,7 +976,7 @@ window.onload = () => {
     if (window.AppInventor) {
       isMITMode = true;
       startMITPolling();
-      window.AppInventor.setWebViewString('HTML_LOADED');
+      // Bridge ready. Do not send a status message; keep WebViewString free for images.
     }
   } catch(e) {}
 
