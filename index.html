@@ -613,23 +613,6 @@ function receiveImage(base64) {
     '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
 }
 
-  // Stop live camera if running
-  stopCamera();
-
-  const prev = document.getElementById('uploaded-preview');
-  prev.src = dataUrl;
-  prev.classList.add('visible');
-  document.getElementById('cam-placeholder').style.display = 'none';
-  document.getElementById('scanOverlay').style.display    = 'flex';
-  document.getElementById('liveVideo').classList.remove('active');
-
-  document.getElementById('analyzeBtn').disabled = false;
-  document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
-
-  document.getElementById('resultCard').classList.add('visible');
-  document.getElementById('resultContent').innerHTML =
-    '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
-}
 
 // ═══════════════════════════════════════════════
 // CAMERA (getUserMedia)
