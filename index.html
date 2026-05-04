@@ -494,45 +494,58 @@ let mitPollStarted      = false;  // prevents duplicate MIT polling timers
 // This page polls getWebViewString() every 500 ms and picks it up.
 // ═══════════════════════════════════════════════
 function detectMIT() {
-  if (window.AppInventor) {
-    isMITMode = true;
-    const notice = document.getElementById('mit-notice');
-    if (notice) notice.style.display = 'block';
-    startMITPolling();
+  try {
+    if (window.AppInventor) {
+      isMITMode = true;
+      const notice = document.getElementById('mit-notice');
+      if (notice) notice.style.display = 'block';
+    }
+  } catch(e) {}
+  startMITPolling();
+}
+
+function setMitDebug(message) {
+  const dbg = document.getElementById('mitDebug');
+  if (dbg) {
+    dbg.style.display = 'block';
+    dbg.textContent = message;
   }
 }
 
 function startMITPolling() {
   if (mitPollStarted) return;
   mitPollStarted = true;
-
-  const dbg = document.getElementById('mitDebug');
-  if (dbg) dbg.style.display = 'block';
+  setMitDebug('Waiting for image from MIT...');
 
   setInterval(() => {
     try {
       if (!window.AppInventor || !window.AppInventor.getWebViewString) return;
-
-      const val = window.AppInventor.getWebViewString();
-      if (!val || val === window._lastMITVal) return;
+      let val = window.AppInventor.getWebViewString();
+      if (!val) return;
+      val = String(val);
+      if (val === window._lastMITVal) return;
       window._lastMITVal = val;
 
-      if (val.startsWith('PAGE:') || val === 'HTML_LOADED' || val === 'IMG_RECEIVED') return;
+      if (val.startsWith('PAGE:')) {
+        return;
+      }
+      if (val === 'HTML_LOADED' || val === 'IMG_RECEIVED') return;
 
-      if (dbg) dbg.textContent = 'Received from MIT: ' + val.length + ' characters';
+      setMitDebug('Received from MIT: ' + val.length + ' characters');
 
       if (val.startsWith('data:image')) {
         receiveImage(val);
-      } else if (val.length > 300) {
-        receiveImage(val);
-      } else {
-        if (dbg) dbg.textContent = 'Received value, but it is not an image: ' + val;
+        return;
       }
+      if (val.startsWith('/9j/') || val.startsWith('iVBOR') || val.length > 500) {
+        receiveImage(val);
+        return;
+      }
+      setMitDebug('Received non-image value: ' + val.substring(0, 80));
     } catch(e) {
-      const dbg = document.getElementById('mitDebug');
-      if (dbg) dbg.textContent = 'MIT bridge error: ' + e.message;
+      setMitDebug('MIT bridge error: ' + e.message);
     }
-  }, 250);
+  }, 200);
 }
 
 // Load image from a local file path (MIT Camera gives us this)
@@ -581,21 +594,19 @@ function receiveImageFromPath(path) {
 
 // ─── Central function: load base64 image into preview ─────
 function receiveImage(base64) {
-  const dbg = document.getElementById('mitDebug');
   if (!base64) {
-    if (dbg) dbg.textContent = 'No image data received.';
+    setMitDebug('No image data received.');
     return;
   }
 
+  base64 = String(base64).trim();
   if (base64.startsWith('data:image')) {
-    base64 = base64.split(',')[1] || '';
+    base64 = base64.substring(base64.indexOf(',') + 1);
   }
-
-  // Remove spaces/newlines that can break a data URL in Android WebView.
-  base64 = String(base64).replace(/\s/g, '');
+  base64 = base64.replace(/\s/g, '');
 
   if (base64.length < 300) {
-    if (dbg) dbg.textContent = 'Image data too short: ' + base64.length + ' characters';
+    setMitDebug('Received image data is too short: ' + base64.length);
     return;
   }
 
@@ -604,28 +615,41 @@ function receiveImage(base64) {
 
   stopCamera();
 
+  const placeholder = document.getElementById('cam-placeholder');
   const prev = document.getElementById('uploaded-preview');
+  const scan = document.getElementById('scanOverlay');
+  const analyze = document.getElementById('analyzeBtn');
+  const hint = document.getElementById('camHint');
+  const resultCard = document.getElementById('resultCard');
+  const resultContent = document.getElementById('resultContent');
+
+  // Show immediate response even before img.onload fires.
+  if (placeholder) placeholder.style.display = 'none';
+  if (scan) scan.style.display = 'flex';
+  if (analyze) analyze.disabled = false;
+  if (hint) hint.textContent = 'Image received · tap Analyze';
+  if (resultCard) resultCard.classList.add('visible');
+  if (resultContent) resultContent.innerHTML = '<p class="result-placeholder">Image received. Preview loading...</p>';
+  setMitDebug('Image data received: ' + base64.length + ' chars. Loading preview...');
+
   prev.onload = () => {
-    document.getElementById('cam-placeholder').style.display = 'none';
-    document.getElementById('scanOverlay').style.display = 'flex';
-    document.getElementById('liveVideo').classList.remove('active');
-    document.getElementById('analyzeBtn').disabled = false;
-    document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
-    if (dbg) dbg.textContent = 'Image preview loaded. Analyze is ready.';
-    document.getElementById('resultCard').classList.add('visible');
-    document.getElementById('resultContent').innerHTML =
-      '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+    prev.classList.add('visible');
+    if (resultContent) resultContent.innerHTML = '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+    setMitDebug('Preview loaded. Analyze is ready.');
     try { if (window.AppInventor) window.AppInventor.setWebViewString('IMG_RECEIVED'); } catch(e) {}
   };
+
   prev.onerror = () => {
-    document.getElementById('resultCard').classList.add('visible');
-    document.getElementById('resultContent').innerHTML =
-      '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. The data received may not be valid Base64 or the image is too large.</div>';
-    if (dbg) dbg.textContent = 'Preview failed. Received length: ' + base64.length;
+    // Keep Analyze enabled because the base64 might still be usable by API.
+    if (analyze) analyze.disabled = false;
+    if (resultContent) resultContent.innerHTML =
+      '<div style="color:var(--orange);font-size:13px;">⚠️ Image data was received, but preview failed. Try lowering photo size or use another image.</div>';
+    setMitDebug('Preview failed. Received length: ' + base64.length);
   };
+
   prev.src = '';
   prev.classList.add('visible');
-  prev.src = dataUrl;
+  setTimeout(() => { prev.src = dataUrl; }, 20);
 }
 
 // ═══════════════════════════════════════════════
