@@ -922,6 +922,15 @@ function toggleWasteCard(el) {
   if (!isOpen) { el.classList.add('selected'); detail.style.display = 'block'; }
 }
 
+// TEMPORARY DEBUG — remove after fixing
+setTimeout(() => {
+  const isAI = typeof window.AppInventor !== 'undefined';
+  const msg = isAI 
+    ? '✅ AppInventor detected! MIT Mode ON' 
+    : '❌ AppInventor NOT detected — running as browser';
+  alert(msg);
+}, 3000);
+
 // ═══════════════════════════════════════════════
 // TIPS
 // ═══════════════════════════════════════════════
