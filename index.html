@@ -493,6 +493,7 @@ let selectedImageBase64 = null;   // base64 string (no data-URL prefix)
 let apiKey              = localStorage.getItem('openrouter_key') || '';
 let cameraStream        = null;   // MediaStream from getUserMedia
 let isMITMode           = false;  // true when running inside MIT AI Companion WebViewer
+let mitPollStarted      = false;  // prevents duplicate MIT polling timers
 
 // ═══════════════════════════════════════════════
 // MIT AI COMPANION DETECTION & BRIDGE
@@ -509,9 +510,8 @@ function detectMIT() {
     document.getElementById('mit-notice').style.display = 'block';
     // In MIT mode the shutter cannot use getUserMedia, so relabel it
     // Hide the in-HTML capture and upload buttons — App Inventor's own buttons handle this
-    // Keep HTML camera/upload buttons visible in MIT mode so they can trigger App Inventor blocks.
-    // document.getElementById('shutterBtn').style.display = 'none';
-    // document.getElementById('uploadBtn').style.display  = 'none';
+    document.getElementById('shutterBtn').style.display = 'none';
+    document.getElementById('uploadBtn').style.display  = 'none';
     // Expand the Analyze button to fill the full row
     document.getElementById('analyzeBtn').style.flex = '1';
     startMITPolling();
@@ -519,6 +519,8 @@ function detectMIT() {
 }
 
 function startMITPolling() {
+  if (mitPollStarted) return;
+  mitPollStarted = true;
   // Poll every 500 ms for an image set by App Inventor via WebViewString.
   // MIT App Inventor's Camera1.AfterPhoto gives a local file path like
   // /storage/emulated/0/DCIM/Camera/IMG_xxx.jpg — NOT base64.
@@ -548,13 +550,7 @@ function startMITPolling() {
 // Draws it onto a canvas to extract base64 for the AI API call
 function receiveImageFromPath(path) {
   // Show the image directly — MIT Companion's WebView can load local file:// paths
-  const src = path.startsWith('file://') || path.startsWith('content://') 
-  ? path 
-  : 'file://' + path;
-  prev.onerror = () => {
-  document.getElementById('resultContent').innerHTML =
-    '<div style="color:red;font-size:13px;">⚠️ Cannot display image from path.<br>Try using Base64 instead.</div>';
-};
+  const src = path.startsWith('file://') ? path : 'file://' + path;
   const prev = document.getElementById('uploaded-preview');
 
   stopCamera();
@@ -656,9 +652,10 @@ function stopCamera() {
 
 // ─── Shutter button: snap a frame from the live video ─────
 function handleShutter() {
-  // Direct MIT App Inventor bridge. This works even if detectMIT() did not run.
   try {
     if (window.AppInventor) {
+      isMITMode = true;
+      startMITPolling();
       window.AppInventor.setWebViewString('ACTION:TAKE_PHOTO');
       return;
     }
@@ -693,7 +690,6 @@ function handleShutter() {
   document.getElementById('shutterBtn').classList.add('retake');
   document.getElementById('camHint').textContent = 'Tap ⚪ to retake · Analyze when ready';
 }
-
 function resetCameraView() {
   selectedImageBase64 = null;
   const prev = document.getElementById('uploaded-preview');
@@ -713,18 +709,16 @@ function resetCameraView() {
 // Instead, MIT blocks push base64 via WebViewString (polled above).
 // ═══════════════════════════════════════════════
 function handleUploadClick() {
-  // Direct MIT App Inventor bridge. This works even if detectMIT() did not run.
   try {
     if (window.AppInventor) {
+      isMITMode = true;
+      startMITPolling();
       window.AppInventor.setWebViewString('ACTION:PICK_IMAGE');
       return;
     }
   } catch(e) {}
-
-  // Normal browser fallback
   document.getElementById('fileInput').click();
 }
-
 function handleFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -962,16 +956,18 @@ function renderTips(cat) {
 // INIT
 // ═══════════════════════════════════════════════
 window.onload = () => {
-  // Let MIT App Inventor know the page loaded successfully.
-  try {
-    if (window.AppInventor) {
-      window.AppInventor.setWebViewString('HTML_LOADED');
-    }
-  } catch(e) {}
-
   renderWasteList('all');
   renderTips('all');
   detectMIT();
+  setTimeout(detectMIT, 500);   // MIT sometimes injects AppInventor after page load
+  setTimeout(detectMIT, 1500);  // second retry so polling definitely starts
+  try {
+    if (window.AppInventor) {
+      isMITMode = true;
+      startMITPolling();
+      window.AppInventor.setWebViewString('HTML_LOADED');
+    }
+  } catch(e) {}
   if (!apiKey) setTimeout(openSettings, 800);
 };
 </script>
