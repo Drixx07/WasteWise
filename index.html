@@ -341,7 +341,7 @@
 
   <!-- MIT App Inventor notice (shown when MIT bridge is detected) -->
   <div id="mit-notice">
-    📱 <strong>MIT AI Companion detected.</strong> Use <strong>📤 Upload</strong> or the green capture button. MIT App Inventor opens the native gallery/camera, then sends the photo back here.
+    📱 <strong>MIT AI Companion detected.</strong> Use <strong>Upload</strong> or the green camera button. MIT will open the native gallery/camera, then send the photo back here.
   </div>
 
   <!-- Camera / preview area -->
@@ -504,17 +504,19 @@ let mitPollStarted      = false;  // prevents duplicate MIT polling timers
 // This page polls getWebViewString() every 500 ms and picks it up.
 // ═══════════════════════════════════════════════
 function detectMIT() {
-  if (window.AppInventor) {
-    isMITMode = true;
-    document.getElementById('mit-notice').style.display = 'block';
+  try {
+    if (window.AppInventor) {
+      isMITMode = true;
+      document.getElementById('mit-notice').style.display = 'block';
 
-    // Keep Upload and Capture buttons visible.
-    // In MIT mode these buttons send commands to App Inventor blocks.
-    document.getElementById('shutterBtn').style.display = '';
-    document.getElementById('uploadBtn').style.display = '';
+      // Keep the HTML buttons visible so the UI stays the same.
+      // The buttons will send ACTION commands to MIT App Inventor.
+      document.getElementById('shutterBtn').style.display = 'flex';
+      document.getElementById('uploadBtn').style.display = 'flex';
 
-    startMITPolling();
-  }
+      startMITPolling();
+    }
+  } catch(e) {}
 }
 
 function startMITPolling() {
@@ -523,22 +525,15 @@ function startMITPolling() {
 
   setInterval(() => {
     try {
+      if (!window.AppInventor) return;
       const val = window.AppInventor.getWebViewString();
       if (!val || val === window._lastMITVal) return;
 
       window._lastMITVal = val;
 
-      // Ignore command/status messages.
-      if (val === 'ACTION:TAKE_PHOTO' || val === 'ACTION:PICK_IMAGE' || val === 'HTML_LOADED') return;
-
-      // Accept full data URL from MIT blocks.
-      if (val.startsWith('data:image')) {
+      if (val.startsWith("data:image")) {
         receiveImage(val);
-        return;
-      }
-
-      // Accept raw base64 from MIT blocks.
-      if (val.length > 500) {
+      } else if (val.length > 500 && !val.startsWith("ACTION:") && val !== "HTML_LOADED") {
         receiveImage(val);
       }
     } catch(e) {}
@@ -593,7 +588,6 @@ function receiveImageFromPath(path) {
 function receiveImage(base64) {
   if (!base64) return;
 
-  // Accept either raw base64 or full data URL.
   if (base64.startsWith('data:image')) {
     base64 = base64.split(',')[1];
   }
@@ -604,23 +598,23 @@ function receiveImage(base64) {
   stopCamera();
 
   const prev = document.getElementById('uploaded-preview');
-  prev.onload = () => {
-    document.getElementById('cam-placeholder').style.display = 'none';
-    document.getElementById('scanOverlay').style.display = 'flex';
-    document.getElementById('liveVideo').classList.remove('active');
-    document.getElementById('analyzeBtn').disabled = false;
-    document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
-    document.getElementById('resultCard').classList.add('visible');
-    document.getElementById('resultContent').innerHTML =
-      '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
-  };
   prev.onerror = () => {
     document.getElementById('resultCard').classList.add('visible');
     document.getElementById('resultContent').innerHTML =
       '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. Try another photo.</div>';
   };
+
   prev.src = dataUrl;
   prev.classList.add('visible');
+
+  document.getElementById('cam-placeholder').style.display = 'none';
+  document.getElementById('scanOverlay').style.display = 'flex';
+  document.getElementById('liveVideo').classList.remove('active');
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
+  document.getElementById('resultCard').classList.add('visible');
+  document.getElementById('resultContent').innerHTML =
+    '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
 }
 
 // ═══════════════════════════════════════════════
@@ -976,7 +970,7 @@ window.onload = () => {
     if (window.AppInventor) {
       isMITMode = true;
       startMITPolling();
-      // Bridge ready. Do not send a status message; keep WebViewString free for images.
+      window.AppInventor.setWebViewString('HTML_LOADED');
     }
   } catch(e) {}
 
