@@ -551,6 +551,10 @@ function receiveImageFromPath(path) {
   const src = path.startsWith('file://') || path.startsWith('content://') 
   ? path 
   : 'file://' + path;
+  prev.onerror = () => {
+  document.getElementById('resultContent').innerHTML =
+    '<div style="color:red;font-size:13px;">⚠️ Cannot display image from path.<br>Try using Base64 instead.</div>';
+};
   const prev = document.getElementById('uploaded-preview');
 
   stopCamera();
