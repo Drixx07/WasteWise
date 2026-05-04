@@ -373,6 +373,7 @@
   <canvas id="snapCanvas"></canvas>
 
   <p class="cam-hint" id="camHint">Use the MIT Upload or Capture button, then tap Analyze</p>
+  <p class="cam-hint" id="mitDebug" style="font-size:11px;display:none;">Waiting for image...</p>
 
   <!-- MIT version: Upload/Capture are native MIT buttons. HTML only keeps Analyze. -->
   <div class="cam-action-row analyze-only-row">
@@ -505,6 +506,9 @@ function startMITPolling() {
   if (mitPollStarted) return;
   mitPollStarted = true;
 
+  const dbg = document.getElementById('mitDebug');
+  if (dbg) dbg.style.display = 'block';
+
   setInterval(() => {
     try {
       if (!window.AppInventor || !window.AppInventor.getWebViewString) return;
@@ -513,17 +517,22 @@ function startMITPolling() {
       if (!val || val === window._lastMITVal) return;
       window._lastMITVal = val;
 
-      // Ignore page/status messages. Only images should update the preview.
       if (val.startsWith('PAGE:') || val === 'HTML_LOADED' || val === 'IMG_RECEIVED') return;
+
+      if (dbg) dbg.textContent = 'Received from MIT: ' + val.length + ' characters';
 
       if (val.startsWith('data:image')) {
         receiveImage(val);
-      } else if (val.length > 500) {
-        // Fallback in case MIT sends raw base64 without the data:image prefix.
+      } else if (val.length > 300) {
         receiveImage(val);
+      } else {
+        if (dbg) dbg.textContent = 'Received value, but it is not an image: ' + val;
       }
-    } catch(e) {}
-  }, 300);
+    } catch(e) {
+      const dbg = document.getElementById('mitDebug');
+      if (dbg) dbg.textContent = 'MIT bridge error: ' + e.message;
+    }
+  }, 250);
 }
 
 // Load image from a local file path (MIT Camera gives us this)
@@ -572,11 +581,22 @@ function receiveImageFromPath(path) {
 
 // ─── Central function: load base64 image into preview ─────
 function receiveImage(base64) {
-  if (!base64) return;
+  const dbg = document.getElementById('mitDebug');
+  if (!base64) {
+    if (dbg) dbg.textContent = 'No image data received.';
+    return;
+  }
 
-  // Accept either raw base64 or a full data URL from MIT.
   if (base64.startsWith('data:image')) {
-    base64 = base64.split(',')[1];
+    base64 = base64.split(',')[1] || '';
+  }
+
+  // Remove spaces/newlines that can break a data URL in Android WebView.
+  base64 = String(base64).replace(/\s/g, '');
+
+  if (base64.length < 300) {
+    if (dbg) dbg.textContent = 'Image data too short: ' + base64.length + ' characters';
+    return;
   }
 
   selectedImageBase64 = base64;
@@ -585,40 +605,27 @@ function receiveImage(base64) {
   stopCamera();
 
   const prev = document.getElementById('uploaded-preview');
-  const placeholder = document.getElementById('cam-placeholder');
-  const overlay = document.getElementById('scanOverlay');
-  const liveVideo = document.getElementById('liveVideo');
-  const analyzeBtn = document.getElementById('analyzeBtn');
-  const hint = document.getElementById('camHint');
-  const resultCard = document.getElementById('resultCard');
-  const resultContent = document.getElementById('resultContent');
-
   prev.onload = () => {
-    if (placeholder) placeholder.style.display = 'none';
-    if (overlay) overlay.style.display = 'flex';
-    if (liveVideo) liveVideo.classList.remove('active');
-    if (analyzeBtn) analyzeBtn.disabled = false;
-    if (hint) hint.textContent = 'Image ready · tap Analyze';
-    if (resultCard) resultCard.classList.add('visible');
-    if (resultContent) {
-      resultContent.innerHTML = '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
-    }
-
-    // Let MIT know the image was received, without leaving the huge base64 string as the current WebViewString.
-    try {
-      if (window.AppInventor) window.AppInventor.setWebViewString('IMG_RECEIVED');
-    } catch(e) {}
+    document.getElementById('cam-placeholder').style.display = 'none';
+    document.getElementById('scanOverlay').style.display = 'flex';
+    document.getElementById('liveVideo').classList.remove('active');
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('camHint').textContent = 'Image ready · tap Analyze';
+    if (dbg) dbg.textContent = 'Image preview loaded. Analyze is ready.';
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultContent').innerHTML =
+      '<p class="result-placeholder">Image loaded. Tap Analyze to identify.</p>';
+    try { if (window.AppInventor) window.AppInventor.setWebViewString('IMG_RECEIVED'); } catch(e) {}
   };
-
   prev.onerror = () => {
-    if (resultCard) resultCard.classList.add('visible');
-    if (resultContent) {
-      resultContent.innerHTML = '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. Try another photo.</div>';
-    }
+    document.getElementById('resultCard').classList.add('visible');
+    document.getElementById('resultContent').innerHTML =
+      '<div style="color:var(--red);font-size:13px;">⚠️ Could not preview image. The data received may not be valid Base64 or the image is too large.</div>';
+    if (dbg) dbg.textContent = 'Preview failed. Received length: ' + base64.length;
   };
-
-  prev.src = dataUrl;
+  prev.src = '';
   prev.classList.add('visible');
+  prev.src = dataUrl;
 }
 
 // ═══════════════════════════════════════════════
