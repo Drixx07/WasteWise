@@ -517,6 +517,8 @@ function startMITPolling() {
   mitPollStarted = true;
   setMitDebug('Waiting for image from MIT...');
 
+  window._mitImageChunks = [];
+
   setInterval(() => {
     try {
       if (!window.AppInventor || !window.AppInventor.getWebViewString) return;
@@ -526,13 +528,35 @@ function startMITPolling() {
       if (val === window._lastMITVal) return;
       window._lastMITVal = val;
 
-      if (val.startsWith('PAGE:')) {
-        return;
-      }
+      if (val.startsWith('PAGE:')) return;
       if (val === 'HTML_LOADED' || val === 'IMG_RECEIVED') return;
 
-      setMitDebug('Received from MIT: ' + val.length + ' characters');
+      // Chunked image transfer from MIT App Inventor.
+      // This avoids AI Companion / WebViewString crashing on very long Base64 strings.
+      if (val === 'IMG_START') {
+        window._mitImageChunks = [];
+        setMitDebug('Receiving image chunks...');
+        return;
+      }
 
+      if (val.startsWith('IMG_CHUNK:')) {
+        const chunk = val.substring('IMG_CHUNK:'.length);
+        window._mitImageChunks.push(chunk);
+        const total = window._mitImageChunks.reduce((sum, c) => sum + c.length, 0);
+        setMitDebug('Receiving image... ' + total + ' characters');
+        return;
+      }
+
+      if (val === 'IMG_END') {
+        const fullBase64 = window._mitImageChunks.join('');
+        setMitDebug('Image transfer complete: ' + fullBase64.length + ' characters');
+        window._mitImageChunks = [];
+        receiveImage(fullBase64);
+        return;
+      }
+
+      // Direct image transfer fallback for small images.
+      setMitDebug('Received from MIT: ' + val.length + ' characters');
       if (val.startsWith('data:image')) {
         receiveImage(val);
         return;
