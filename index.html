@@ -3,200 +3,478 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>WasteWise – Learn, Quiz, Classify</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<title>WasteWise – AI Waste Learning App</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#2e9e60;--green2:#1e7a47;--light:#e8f5ee;--bg:#f4f7f5;--card:#fff;--text:#172033;--sub:#6b7280;--border:#e5e7eb;--red:#e03131;--blue:#2563eb;--orange:#f76707;--nav:76px;--header:62px}*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}.topbar{height:var(--header);position:fixed;top:0;left:0;right:0;z-index:20;background:linear-gradient(135deg,var(--green2),var(--green),#60d394);display:flex;align-items:center;justify-content:space-between;padding:0 18px;color:#fff}.logo{font-family:'Nunito';font-size:23px;font-weight:900}.logo span{opacity:.85}.settings-mini{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:13px;padding:9px 11px;font-weight:800}.screen{display:none;padding:calc(var(--header) + 14px) 16px calc(var(--nav) + 18px)}.screen.active{display:block}.hero{border-radius:24px;padding:20px;margin-bottom:14px;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;box-shadow:0 14px 28px rgba(46,158,96,.22)}.hero h1{font-family:'Nunito';font-size:28px;line-height:1.05;margin-bottom:7px}.hero p{font-size:14px;opacity:.9;line-height:1.5}.card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.card h2,.card h3{font-family:'Nunito';font-weight:900;margin-bottom:8px}.muted{color:var(--sub);font-size:13px;line-height:1.5}.btn{border:0;border-radius:16px;padding:12px 14px;background:var(--green);color:#fff;font-family:'Nunito';font-weight:900;font-size:14px;box-shadow:0 8px 18px rgba(46,158,96,.22)}.btn.secondary{background:var(--light);color:var(--green2);box-shadow:none}.btn.ghost{background:#fff;color:var(--green2);border:1px solid #b7e4c7;box-shadow:none}.btn.danger{background:#fff5f5;color:var(--red);box-shadow:none}.tapbtn{user-select:none;text-align:center;touch-action:manipulation}.api-actions{margin-top:12px}.api-actions .tapbtn{min-width:98px}.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.input,.select{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:12px 13px;font-size:14px;background:#fff;outline:none;margin-top:8px}.input:focus,.select:focus{border-color:var(--green)}.api-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.api-body{display:block;margin-top:10px}.api-body.collapsed{display:none}.status{font-size:12px;margin-top:8px;color:var(--sub)}.nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);z-index:30;background:#fff;border-top:1px solid var(--border);display:flex;box-shadow:0 -10px 22px rgba(15,23,42,.05)}.nav button{flex:1;border:0;background:#fff;color:#9ca3af;font-weight:800;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}.nav button .ico{font-size:23px}.nav button.active{color:var(--green)}.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.topic{padding:14px;border-radius:18px;background:#fff;border:1px solid var(--border);text-align:left}.topic strong{display:block;font-family:'Nunito';font-size:15px;margin-bottom:4px}.topic span{font-size:12px;color:var(--sub)}.lesson-content{line-height:1.6;font-size:14px}.lesson-content h3{font-family:'Nunito';font-size:20px;margin:10px 0 7px}.lesson-content p{margin:9px 0}.lesson-content ul{padding-left:20px;margin:8px 0}.lesson-content li{margin:5px 0}.quiz-panel{display:none}.quiz-panel.active{display:block}.q-card{border:1px solid var(--border);border-radius:18px;padding:13px;margin:10px 0;background:#fff}.option{display:block;border:1px solid var(--border);border-radius:13px;padding:10px;margin-top:8px}.option input{margin-right:8px}.answer-key{display:none;margin-top:10px;padding:10px;border-radius:13px;background:#f0fdf4;color:#14532d;font-size:13px}.answer-key.show{display:block}.scorebox{display:none;border-radius:18px;background:#ecfdf5;color:#14532d;padding:14px;margin:12px 0;font-weight:800}.scorebox.show{display:block}.waste-card{display:flex;gap:13px;align-items:flex-start}.waste-img{width:68px;height:68px;border-radius:18px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0}.badge{display:inline-block;margin:6px 0;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:900;background:var(--light);color:var(--green2)}.examples{display:none;margin-top:10px;padding:12px;border-radius:16px;background:#f9fafb;font-size:13px;line-height:1.55}.examples.show{display:block}.modal{position:fixed;inset:0;background:rgba(15,23,42,.52);z-index:60;display:none;align-items:flex-end}.modal.show{display:flex}.sheet{background:#fff;border-radius:24px 24px 0 0;max-height:86vh;overflow:auto;width:100%;padding:18px}.sheet-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.x{border:0;background:#f3f4f6;border-radius:12px;padding:8px 11px;font-weight:900}.loading{display:none;align-items:center;gap:8px;color:var(--sub);font-size:13px;margin-top:8px}.loading.show{display:flex}.spin{width:18px;height:18px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}pre{white-space:pre-wrap;font-family:inherit}.quick-list{display:grid;gap:8px}.quick-list button{text-align:left}.hide{display:none!important}
+:root{
+  --green:#2e9e60; --green-dark:#1e7a47; --green-soft:#e8f5ee;
+  --blue:#3b5bdb; --blue-soft:#eef2ff;
+  --orange:#f76707; --orange-soft:#fff4e6;
+  --red:#e03131; --red-soft:#fff5f5;
+  --purple:#7048e8; --purple-soft:#f3f0ff;
+  --bg:#f4f7fb; --card:#ffffff; --text:#172033; --muted:#6b7280; --border:#e5e7eb;
+  --nav-h:74px; --header-h:60px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button,input,select{font-family:inherit}
+.app-header{
+  position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:50;
+  background:linear-gradient(135deg,var(--green-dark),var(--green),#4ade80);
+  color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+  box-shadow:0 8px 22px rgba(30,122,71,.22)
+}
+.logo{font-family:'Nunito';font-weight:900;font-size:21px;letter-spacing:-.5px}
+.logo span{color:#d4f7e7}
+.icon-btn{background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:14px;padding:8px 10px;font-weight:900;font-size:18px}
+.screen{display:none;min-height:100vh;padding:calc(var(--header-h) + 14px) 16px calc(var(--nav-h) + 18px)}
+.screen.active{display:block}
+.hero{
+  background:linear-gradient(135deg,var(--green-dark),var(--green),#4ade80);
+  color:#fff;border-radius:24px;padding:22px 18px;margin-bottom:16px;
+  box-shadow:0 14px 35px rgba(46,158,96,.25);position:relative;overflow:hidden
+}
+.hero:after{content:"";position:absolute;right:-35px;top:-35px;width:130px;height:130px;background:rgba(255,255,255,.16);border-radius:999px}
+.hero h1{font-family:'Nunito';font-size:27px;line-height:1.1;font-weight:900;margin-bottom:6px;position:relative;z-index:1}
+.hero p{font-size:14px;opacity:.92;line-height:1.45;position:relative;z-index:1}
+.grid{display:grid;gap:12px}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;
+  box-shadow:0 6px 22px rgba(15,23,42,.06);margin-bottom:12px
+}
+.card-title{font-family:'Nunito';font-size:18px;font-weight:900;margin-bottom:6px}
+.sub{font-size:13px;color:var(--muted);line-height:1.5}
+.row{display:flex;gap:10px;align-items:center}
+.input,.select{
+  width:100%;border:1.5px solid var(--border);background:#fff;border-radius:14px;padding:12px 13px;
+  font-size:14px;outline:none;margin-top:8px
+}
+.input:focus,.select:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(46,158,96,.10)}
+.btn{
+  border:0;border-radius:15px;padding:12px 14px;font-weight:800;font-size:14px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px
+}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 8px 18px rgba(46,158,96,.25)}
+.btn-secondary{background:var(--green-soft);color:var(--green-dark)}
+.btn-danger{background:var(--red-soft);color:var(--red)}
+.btn-dark{background:#172033;color:#fff}
+.btn:disabled{opacity:.55}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.feature-card{
+  display:flex;gap:13px;align-items:center;background:#fff;border:1px solid var(--border);
+  padding:15px;border-radius:19px;box-shadow:0 6px 20px rgba(15,23,42,.05);margin-bottom:10px
+}
+.feature-icon{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.feature-card h3{font-family:'Nunito';font-size:16px;font-weight:900}
+.feature-card p{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.topic-card{border:1.5px solid var(--border);background:#fff;border-radius:18px;padding:14px;text-align:left}
+.topic-card.active{border-color:var(--green);background:var(--green-soft)}
+.topic-card .emoji{font-size:24px;margin-bottom:6px}
+.topic-card h3{font-family:'Nunito';font-size:15px;font-weight:900}
+.lesson-box{line-height:1.65;font-size:14px}
+.lesson-box ul{padding-left:20px;margin-top:8px}
+.quiz-sheet{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:100;background:#fff;border-radius:26px 26px 0 0;
+  max-height:83vh;overflow:auto;padding:18px 16px calc(var(--nav-h) + 10px);
+  box-shadow:0 -14px 40px rgba(15,23,42,.22)
+}
+.quiz-sheet.open{display:block}
+.sheet-handle{width:46px;height:5px;border-radius:99px;background:#d1d5db;margin:0 auto 12px}
+.quiz-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.42);z-index:90}
+.quiz-overlay.open{display:block}
+.q-card{border:1px solid var(--border);border-radius:17px;padding:13px;margin-bottom:11px;background:#fafafa}
+.q-title{font-weight:800;margin-bottom:9px;line-height:1.4}
+.option{
+  display:block;background:#fff;border:1.5px solid var(--border);padding:10px;border-radius:13px;margin:7px 0;font-size:14px
+}
+.option input{margin-right:8px}
+.correct{border-color:var(--green);background:var(--green-soft)}
+.wrong{border-color:var(--red);background:var(--red-soft)}
+.answer-note{display:none;margin-top:8px;font-size:13px;line-height:1.45;color:var(--muted)}
+.answers-shown .answer-note{display:block}
+.score-box{display:none;border-radius:18px;padding:14px;background:linear-gradient(135deg,var(--green-soft),#fff);border:1px solid #bde8cf;margin-bottom:12px}
+.score-box.show{display:block}
+.class-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:15px;margin-bottom:12px;box-shadow:0 6px 20px rgba(15,23,42,.05)}
+.class-head{display:flex;gap:12px;align-items:center}
+.class-img{width:62px;height:62px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+.badge{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;padding:4px 9px;border-radius:999px;margin-top:5px}
+.examples{display:none;margin-top:12px;padding:12px;border-radius:15px;background:#f9fafb;border:1px solid var(--border);font-size:13px;line-height:1.55}
+.examples.show{display:block}
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;height:var(--nav-h);background:#fff;z-index:60;
+  display:flex;border-top:1px solid var(--border);box-shadow:0 -8px 22px rgba(15,23,42,.06)
+}
+.nav-item{
+  flex:1;border:0;background:#fff;color:#9ca3af;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px
+}
+.nav-item .nav-ico{font-size:21px}
+.nav-item.active{color:var(--green);background:linear-gradient(180deg,#fff,var(--green-soft))}
+.small-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+.status{font-size:12px;margin-top:8px;color:var(--green-dark);font-weight:700}
+.hidden{display:none!important}
+@media(min-width:720px){.screen{max-width:760px;margin:auto}.bottom-nav{max-width:760px;margin:auto;left:50%;transform:translateX(-50%);border-radius:22px 22px 0 0}.app-header{max-width:760px;margin:auto;left:50%;transform:translateX(-50%)}}
 </style>
 </head>
 <body>
-<header class="topbar"><div class="logo">Waste<span>Wise</span></div><button type="button" class="settings-mini" onclick="openSettings(event)" ontouchend="openSettings(event)">⚙️ Settings</button></header>
+<header class="app-header">
+  <div class="logo">Waste<span>Wise</span></div>
+  <button class="icon-btn" onclick="goSettings()">⚙️</button>
+</header>
 
-<main id="home" class="screen active">
-  <section class="hero"><h1>Learn waste segregation smarter.</h1><p>Study short lessons, generate AI quizzes, and classify common trash with disposal tips.</p></section>
-  
-  <section class="card"><h2>Start here</h2><p class="muted">Go to Lesson, choose a topic, then take a quiz. Answers only show after finishing.</p><div class="btnrow"><button class="btn" onclick="go('lesson')">Open Lessons</button><button class="btn secondary" onclick="go('classify')">View Classification</button></div></section>
-</main>
-<main id="settings" class="screen">
-  <section class="hero"><h1>Settings</h1><p>Save your OpenRouter API key here. This page is used instead of a popup so it works better in MIT App Inventor.</p></section>
-  <section class="card" id="apiCard">
-    <h2>🔑 OpenRouter API Key</h2>
-    <p class="muted">Paste your key below. In MIT App Inventor, the key auto-saves while typing/pasting, so you do not have to rely on button clicks.</p>
-    <input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off" autocapitalize="off" spellcheck="false">
-    <div class="status" id="apiStatus">Key not loaded yet.</div>
-    <div class="btnrow api-actions">
-      <div class="btn tapbtn" id="saveKeyBtn" data-api-action="save" role="button" tabindex="0">Save Key</div>
-      <div class="btn ghost tapbtn" id="toggleKeyBtn" data-api-action="toggle" role="button" tabindex="0">Show/Hide</div>
-      <div class="btn danger tapbtn" id="clearKeyBtn" data-api-action="clear" role="button" tabindex="0">Clear Key</div>
+<section id="screen-home" class="screen active">
+  <div class="hero">
+    <h1>Smart Waste Learning</h1>
+    <p>Study quick lessons, take AI-generated quizzes, and learn how to classify trash properly.</p>
+  </div>
+
+  <div class="feature-card" onclick="switchScreen('lesson')">
+    <div class="feature-icon" style="background:var(--green-soft)">📘</div>
+    <div><h3>Start with a lesson</h3><p>Choose a topic, learn the basics, then generate a quiz.</p></div>
+  </div>
+  <div class="feature-card" onclick="switchScreen('classify')">
+    <div class="feature-icon" style="background:var(--blue-soft)">♻️</div>
+    <div><h3>Classification guide</h3><p>See examples, images, and disposal tips by waste category.</p></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">How to use</div>
+    <p class="sub">1. Open Settings and save your OpenRouter API key. 2. Read a lesson. 3. Choose the number of quiz items. 4. Submit answers to reveal score and correct answers.</p>
+  </div>
+</section>
+
+<section id="screen-settings" class="screen">
+  <div class="hero">
+    <h1>Settings</h1>
+    <p>Save your API key here. This simple card is MIT WebViewer-friendly.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔑 OpenRouter API Key</div>
+    <p class="sub">Your key is hidden while typing. In MIT, the key is saved through TinyDB using WebViewString.</p>
+    <input id="apiKeyInput" class="input" type="password" placeholder="sk-or-v1-..." autocomplete="off">
+    <div class="actions">
+      <button class="btn btn-primary" onclick="saveKey()">Save Key</button>
+      <button class="btn btn-danger" onclick="clearKey()">Clear Key</button>
     </div>
-    <p class="muted" style="margin-top:10px">Tip: after pasting the key, wait for the status to say “Auto-saved”.</p>
-    <div class="btnrow"><div class="btn secondary tapbtn" onclick="go('home')" role="button">Back to Home</div></div>
-  </section>
-</main>
+    <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="toggleKey()">Show / Hide Key</button>
+    <div id="keyStatus" class="status"></div>
+  </div>
+</section>
 
-<main id="lesson" class="screen">
-  <section class="hero"><h1>Topic / Lesson</h1><p>Select a topic, generate an AI lesson, then answer a quiz.</p></section>
-  <section class="card"><h3>Choose a topic</h3><div class="topic-grid" id="topicGrid"></div></section>
-  <section class="card"><h3 id="selectedTopicTitle">Selected Topic</h3><p class="muted" id="selectedTopicDesc">Pick a topic to begin.</p><label class="muted">Quiz items</label><select class="select" id="quizCount"><option value="3">3 items</option><option value="5" selected>5 items</option><option value="10">10 items</option></select><div class="btnrow"><button class="btn" onclick="generateLesson()">Generate Lesson</button><button class="btn secondary" onclick="useQuickLesson()">Use Quick Lesson</button><button class="btn ghost" onclick="openQuizSheet()">Open Quiz Panel</button></div><div class="loading" id="lessonLoading"><div class="spin"></div><span>Generating lesson...</span></div></section>
-  <section class="card lesson-content" id="lessonContent"><h3>Lesson preview</h3><p>Select a topic and generate a lesson. AI output is cleaned so raw markdown or HTML instructions will not flood the page.</p></section>
-</main>
+<section id="screen-lesson" class="screen">
+  <div class="hero">
+    <h1>Topic / Lesson</h1>
+    <p>Select a lesson topic first, then generate your quiz.</p>
+  </div>
 
-<main id="classify" class="screen">
-  <section class="hero"><h1>Classification</h1><p>See trash examples with simple disposal tips.</p></section>
+  <div class="topic-grid" id="topicGrid"></div>
+
+  <div class="card">
+    <div class="card-title" id="lessonTitle">Choose a topic</div>
+    <div class="lesson-box" id="lessonContent">
+      <p class="sub">Pick a topic above to view a short lesson.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">AI Quiz Generator</div>
+    <p class="sub">Answers stay hidden until you finish all items.</p>
+    <select id="quizCount" class="select">
+      <option value="3">3 items</option>
+      <option value="5" selected>5 items</option>
+      <option value="10">10 items</option>
+    </select>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="generateQuiz()">Generate Quiz</button>
+      <button class="btn btn-secondary" onclick="openQuiz()">Open Quiz</button>
+    </div>
+    <button class="btn btn-danger" style="width:100%;margin-top:8px" onclick="clearQuiz()">Clear Previous Quiz</button>
+    <div id="quizStatus" class="small-note"></div>
+  </div>
+</section>
+
+<section id="screen-classify" class="screen">
+  <div class="hero">
+    <h1>Classification</h1>
+    <p>View examples of trash and learn how to dispose of them properly.</p>
+  </div>
   <div id="classifyList"></div>
-</main>
+</section>
 
-<nav class="nav"><button id="nav-home" class="active" onclick="go('home')"><span class="ico">🏠</span>Home</button><button id="nav-lesson" onclick="go('lesson')"><span class="ico">📘</span>Lesson</button><button id="nav-classify" onclick="go('classify')"><span class="ico">♻️</span>Classify</button></nav>
+<div id="quizOverlay" class="quiz-overlay" onclick="closeQuiz()"></div>
+<div id="quizSheet" class="quiz-sheet">
+  <div class="sheet-handle"></div>
+  <div class="row" style="justify-content:space-between;margin-bottom:10px">
+    <div>
+      <div class="card-title" style="margin:0">AI Quiz</div>
+      <div class="sub" id="quizTopicLabel">No quiz generated yet.</div>
+    </div>
+    <button class="btn btn-danger" onclick="closeQuiz()">Close</button>
+  </div>
+  <div id="scoreBox" class="score-box"></div>
+  <div id="quizQuestions"></div>
+  <button id="submitQuizBtn" class="btn btn-primary" style="width:100%;margin-top:8px" onclick="submitQuiz()">Submit Answers</button>
+</div>
 
-<div class="modal" id="quizModal"><div class="sheet"><div class="sheet-head"><h2>AI Quiz</h2><button class="x" onclick="closeQuizSheet()">✕</button></div><p class="muted">Answers and explanations appear only after you finish all items.</p><div class="btnrow"><button class="btn" onclick="generateQuiz()">Generate Quiz</button><button class="btn danger" onclick="clearQuiz()">Clear Quiz</button></div><div class="loading" id="quizLoading"><div class="spin"></div><span>Generating quiz...</span></div><div class="scorebox" id="scoreBox"></div><div id="quizBox"></div></div></div>
+<nav class="bottom-nav">
+  <button id="nav-home" class="nav-item active" onclick="switchScreen('home')"><span class="nav-ico">🏠</span>Home</button>
+  <button id="nav-lesson" class="nav-item" onclick="switchScreen('lesson')"><span class="nav-ico">📘</span>Lesson</button>
+  <button id="nav-classify" class="nav-item" onclick="switchScreen('classify')"><span class="nav-ico">♻️</span>Classify</button>
+</nav>
 
 <script>
-let apiKey = localStorage.getItem('openrouter_key') || '';
-let selectedTopic = 'Waste Segregation Basics';
+let apiKey = localStorage.getItem("openrouter_key") || "";
+let selectedTopic = null;
 let quizData = [];
-let quizFinished = false;
-const topics=[['Waste Segregation Basics','Learn the correct separation of biodegradable, recyclable, residual, and hazardous waste.'],['Biodegradable Waste','Understand compostable waste like food scraps and leaves.'],['Recyclable Waste','Learn how to clean and prepare bottles, cans, paper, and cardboard.'],['Hazardous Waste','Study safe disposal for batteries, chemicals, bulbs, and e-waste.'],['Residual Waste','Know what cannot be recycled or composted and how to reduce it.'],['Barangay Waste Practices','Learn practical waste habits for Philippine communities.']];
-const waste=[{id:'bio',name:'Biodegradable',emoji:'🍃',badge:'Green bin / compost',examples:['Fruit peels','Vegetable scraps','Leaves','Leftover food'],tip:'Keep it separate and compost when possible. Avoid mixing with plastics.'},{id:'rec',name:'Recyclable',emoji:'♻️',badge:'Recycling bin',examples:['Plastic bottles','Glass jars','Aluminum cans','Clean cardboard'],tip:'Rinse and dry before recycling to avoid contamination.'},{id:'res',name:'Residual',emoji:'🗑️',badge:'Black bag / residual bin',examples:['Used tissue','Soiled plastic','Diapers','Cigarette butts'],tip:'Reduce use when possible and keep it away from recyclables.'},{id:'haz',name:'Hazardous',emoji:'⚠️',badge:'Special disposal',examples:['Batteries','Light bulbs','Chemicals','E-waste'],tip:'Do not mix with regular trash. Bring to barangay or LGU drop-off points.'},{id:'nonbio',name:'Non-biodegradable',emoji:'🧱',badge:'Separate from organics',examples:['Styrofoam','Plastic wrappers','Rubber','Synthetic fabric'],tip:'Reuse when possible. If not recyclable, dispose as residual waste.'}];
-function safeText(s){return String(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
-function cleanAIText(t){t=String(t||'').replace(/```html|```/gi,'').replace(/<[^>]*>/g,'').replace(/\*\*/g,'').replace(/#+\s*/g,'').replace(/`/g,'').trim();return t;}
-function formatLesson(t){t=cleanAIText(t);let lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return '<p>No lesson generated. Try again.</p>';return lines.map((l,i)=> i===0?`<h3>${safeText(l)}</h3>`:`<p>${safeText(l).replace(/^[-•]\s*/,'• ')}</p>`).join('');}
-function go(id){
-  const target=document.getElementById(id);
-  if(!target) return;
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  target.classList.add('active');
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-  const nav=document.getElementById('nav-'+id);
-  if(nav) nav.classList.add('active');
-  window.scrollTo(0,0);
-}
-function openSettings(ev){
-  if(ev){ev.preventDefault(); ev.stopPropagation();}
-  go('settings');
-  setTimeout(()=>{
-    const input=document.getElementById('apiKeyInput');
-    if(input){ input.value = apiKey || input.value; }
-    sendToMIT('REQUEST_KEY');
-  },150);
-  return false;
-}
-function toggleKeyVisible(ev){
-  if(ev){ev.preventDefault(); ev.stopPropagation();}
-  const input=document.getElementById('apiKeyInput');
-  if(input) input.type=input.type==='password'?'text':'password';
-  return false;
-}
-function sendToMIT(message){
-  let sent=false;
-  try{
-    if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
-      window.AppInventor.setWebViewString(message);
-      sent=true;
-    }
-  }catch(e){}
-  return sent;
-}
-function saveKeyValue(val, reason){
-  val=(val||'').trim();
-  const input=document.getElementById('apiKeyInput');
-  if(!val){
-    apiKey='';
-    try{localStorage.removeItem('openrouter_key');}catch(e){}
-    sendToMIT('CLEAR_KEY');
-    setStatus('API key cleared.');
-    return false;
-  }
-  apiKey=val;
-  try{localStorage.setItem('openrouter_key',val);}catch(e){}
-  const sent=sendToMIT('SAVE_KEY:'+val);
-  setStatus(sent ? (reason || 'API key saved to app storage.') : (reason || 'API key saved in browser storage.'));
-  if(input) input.blur();
-  return false;
-}
-function saveApiKey(ev){
-  if(ev){ev.preventDefault(); ev.stopPropagation();}
-  const input=document.getElementById('apiKeyInput');
-  const val=(input?.value||'').trim();
-  if(!val){setStatus('Enter API key first.'); if(input) input.focus(); return false;}
-  return saveKeyValue(val, 'API key saved.');
-}
-function clearApiKey(ev){
-  if(ev){ev.preventDefault(); ev.stopPropagation();}
-  apiKey='';
-  try{localStorage.removeItem('openrouter_key');}catch(e){}
-  const input=document.getElementById('apiKeyInput');
-  if(input){input.value=''; input.blur();}
-  const sent=sendToMIT('CLEAR_KEY');
-  setStatus(sent ? 'API key cleared from app storage.' : 'API key cleared in browser storage.');
-  return false;
-}
-function loadApiKeyFromMIT(key){
-  key=(key||'').trim();
-  const input=document.getElementById('apiKeyInput');
-  if(key){
-    apiKey=key;
-    try{localStorage.setItem('openrouter_key',key);}catch(e){}
-    if(input) input.value=key;
-    setStatus('API key loaded from app storage.');
-  }else{
-    if(input) input.value=apiKey;
-    setStatus(apiKey?'API key loaded from browser storage.':'No saved API key.');
-  }
-}
-function setStatus(t){const el=document.getElementById('apiStatus'); if(el) el.textContent=t;}
-async function openRouter(messages,maxTokens=900){if(!apiKey){go('settings');throw new Error('Please save your API key first.');}const models=['google/gemini-2.0-flash-001','google/gemini-2.5-flash-preview:free','mistralai/mistral-small-3.1-24b-instruct:free','meta-llama/llama-4-maverick:free'];let last='';for(const model of models){try{const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'WasteWise'},body:JSON.stringify({model,messages,max_tokens:maxTokens})});const d=await r.json();if(d.error)throw new Error(d.error.message||'API error');return d.choices?.[0]?.message?.content||'';}catch(e){last=e.message;}}throw new Error(last||'All models failed.');}
-function renderTopics(){document.getElementById('topicGrid').innerHTML=topics.map(([t,d])=>`<button class="topic" onclick="selectTopic('${safeText(t)}','${safeText(d)}')"><strong>${safeText(t)}</strong><span>${safeText(d)}</span></button>`).join('');}
-function selectTopic(t,d){selectedTopic=t;document.getElementById('selectedTopicTitle').textContent=t;document.getElementById('selectedTopicDesc').textContent=d;}
-async function generateLesson(){const load=document.getElementById('lessonLoading');load.classList.add('show');try{const txt=await openRouter([{role:'user',content:`Create a concise student-friendly lesson about ${selectedTopic} in waste management. Return plain text only. Do not include HTML code, markdown instructions, or formatting guide. Include: definition, examples, importance, and disposal reminders.`}],900);document.getElementById('lessonContent').innerHTML=formatLesson(txt);}catch(e){document.getElementById('lessonContent').innerHTML=`<p style="color:var(--red)">${safeText(e.message)}</p>`;}finally{load.classList.remove('show');}}
-function useQuickLesson(){document.getElementById('lessonContent').innerHTML=`<h3>${safeText(selectedTopic)}</h3><p>${safeText(selectedTopic)} helps people understand where waste should go before collection.</p><p>Always separate biodegradable, recyclable, residual, and hazardous waste. Clean recyclables before placing them in the bin, and never mix hazardous waste with regular trash.</p><p>Small daily habits such as rinsing bottles, composting food scraps, and reducing single-use plastics can make waste management easier for the community.</p>`;}
-function openQuizSheet(){document.getElementById('quizModal').classList.add('show');}
-function closeQuizSheet(){document.getElementById('quizModal').classList.remove('show');}
-function clearQuiz(){quizData=[];quizFinished=false;document.getElementById('quizBox').innerHTML='';document.getElementById('scoreBox').classList.remove('show');}
-async function generateQuiz(){openQuizSheet();clearQuiz();const count=Number(document.getElementById('quizCount').value||5);document.getElementById('quizLoading').classList.add('show');try{const txt=await openRouter([{role:'user',content:`Generate exactly ${count} multiple-choice quiz questions about ${selectedTopic} for students. Return ONLY valid JSON array. Each item must have question, options array with 4 choices, answer as exact option text, and explanation. No markdown.`}],1200);let clean=txt.replace(/```json|```/gi,'').trim();quizData=JSON.parse(clean);renderQuiz();}catch(e){document.getElementById('quizBox').innerHTML=`<p style="color:var(--red)">${safeText(e.message)} Try Use Quick Lesson or generate again.</p>`;}finally{document.getElementById('quizLoading').classList.remove('show');}}
-function renderQuiz(){const box=document.getElementById('quizBox');box.innerHTML=quizData.map((q,i)=>`<div class="q-card"><h3>${i+1}. ${safeText(q.question)}</h3>${(q.options||[]).map(o=>`<label class="option"><input type="radio" name="q${i}" value="${safeText(o)}"> ${safeText(o)}</label>`).join('')}<div class="answer-key" id="ans${i}"><b>Answer:</b> ${safeText(q.answer)}<br><b>Why:</b> ${safeText(q.explanation)}</div></div>`).join('')+`<button class="btn" onclick="finishQuiz()">Finish Quiz</button>`;}
-function finishQuiz(){if(!quizData.length)return;let score=0;quizData.forEach((q,i)=>{const chosen=document.querySelector(`input[name="q${i}"]:checked`);if(chosen&&chosen.value===q.answer)score++;document.getElementById('ans'+i).classList.add('show');});const s=document.getElementById('scoreBox');s.textContent=`Score: ${score}/${quizData.length}. Answers are now visible below each item.`;s.classList.add('show');}
-function renderClassify(){document.getElementById('classifyList').innerHTML=waste.map(w=>`<section class="card waste-card"><div class="waste-img">${w.emoji}</div><div><h3>${w.name}</h3><span class="badge">${w.badge}</span><p class="muted">Tap below to view examples and disposal tips.</p><button class="btn secondary" onclick="toggleExamples('${w.id}')">View examples + tip</button><div class="examples" id="ex-${w.id}"><b>Examples:</b><br>${w.examples.map(e=>'• '+safeText(e)).join('<br>')}<br><br><b>Disposal tip:</b> ${safeText(w.tip)}</div></div></section>`).join('');}
-function toggleExamples(id){document.getElementById('ex-'+id).classList.toggle('show');}
+let answersShown = false;
 
-function handleApiAction(act, ev){
-  if(ev){ev.preventDefault(); ev.stopPropagation();}
-  if(act==='save') return saveApiKey(ev);
-  if(act==='clear') return clearApiKey(ev);
-  if(act==='toggle') return toggleKeyVisible(ev);
+const topics = [
+  {id:"segregation", emoji:"🗂️", title:"Waste Segregation", lesson:`<p>Waste segregation means separating trash based on type before disposal. It helps reduce pollution and makes recycling easier.</p><ul><li>Separate biodegradable, recyclable, residual, and hazardous waste.</li><li>Keep recyclables clean and dry.</li><li>Never mix hazardous waste with regular trash.</li></ul>`},
+  {id:"recycling", emoji:"♻️", title:"Recycling Basics", lesson:`<p>Recycling turns used materials into new products. It saves resources and reduces landfill waste.</p><ul><li>Rinse bottles and cans before recycling.</li><li>Flatten cardboard to save space.</li><li>Do not recycle dirty or greasy containers.</li></ul>`},
+  {id:"hazardous", emoji:"⚠️", title:"Hazardous Waste", lesson:`<p>Hazardous waste can harm people, animals, and the environment. It needs special handling.</p><ul><li>Batteries, bulbs, chemicals, and e-waste are hazardous.</li><li>Do not throw them with normal garbage.</li><li>Bring them to barangay or LGU collection points when available.</li></ul>`},
+  {id:"composting", emoji:"🌱", title:"Composting", lesson:`<p>Composting turns organic waste into useful soil material. It reduces food waste sent to landfills.</p><ul><li>Fruit peels, vegetable scraps, and leaves can be composted.</li><li>Avoid meat, oil, and dairy in simple home composting.</li><li>Keep compost slightly moist and mixed.</li></ul>`}
+];
+
+const classifications = [
+  {id:"bio", emoji:"🍃", name:"Biodegradable", imgBg:"var(--green-soft)", badge:"Green Bin", examples:["Fruit peels","Vegetable scraps","Leaves","Food scraps"], tip:"Compost when possible. Keep wet food waste separate from recyclables."},
+  {id:"rec", emoji:"♻️", name:"Recyclable", imgBg:"#e0f2fe", badge:"Recycle Bin", examples:["Plastic bottles","Aluminum cans","Glass jars","Clean cardboard"], tip:"Rinse and dry items first. Flatten cardboard and do not mix with food waste."},
+  {id:"nonbio", emoji:"🧱", name:"Non-Biodegradable", imgBg:"var(--blue-soft)", badge:"Blue Bin", examples:["Styrofoam","Plastic wrappers","Rubber","Synthetic cloth"], tip:"Reuse when possible. If not recyclable, dispose as residual waste."},
+  {id:"res", emoji:"🗑️", name:"Residual Waste", imgBg:"var(--orange-soft)", badge:"Black Bag", examples:["Used tissue","Diapers","Soiled plastics","Cigarette butts"], tip:"Place in proper garbage bag. Do not mix with clean recyclables."},
+  {id:"haz", emoji:"⚠️", name:"Hazardous Waste", imgBg:"var(--red-soft)", badge:"Special Disposal", examples:["Batteries","Light bulbs","Chemicals","E-waste"], tip:"Never mix with regular trash. Bring to special collection or LGU drop-off points."}
+];
+
+function safeMITSend(message){
+  try{ if(window.AppInventor){ window.AppInventor.setWebViewString(message); return true; } }catch(e){}
   return false;
 }
-['touchstart','pointerdown','mousedown','click'].forEach(evt=>{
-  document.addEventListener(evt, function(e){
-    const btn=e.target.closest('[data-api-action]');
-    if(!btn) return;
-    handleApiAction(btn.getAttribute('data-api-action'), e);
-  }, true);
-});
-let apiSaveTimer=null;
-function setupApiInputAutosave(){
-  const input=document.getElementById('apiKeyInput');
-  if(!input) return;
-  input.addEventListener('input', ()=>{
-    clearTimeout(apiSaveTimer);
-    apiSaveTimer=setTimeout(()=>{
-      const val=(input.value||'').trim();
-      if(val){ saveKeyValue(val, 'Auto-saved API key.'); }
-      else { clearApiKey(); }
-    }, 700);
-  });
-  input.addEventListener('change', ()=>{
-    const val=(input.value||'').trim();
-    if(val) saveKeyValue(val, 'API key saved.');
-  });
+
+function saveKey(){
+  const val = document.getElementById("apiKeyInput").value.trim();
+  if(!val){ setStatus("Please enter an API key.", true); return; }
+  apiKey = val;
+  localStorage.setItem("openrouter_key", val);
+  safeMITSend("SAVE_KEY:" + val);
+  setStatus("API key saved.");
 }
-window.addEventListener('load',()=>{
+
+function clearKey(){
+  apiKey = "";
+  localStorage.removeItem("openrouter_key");
+  document.getElementById("apiKeyInput").value = "";
+  safeMITSend("CLEAR_KEY");
+  setStatus("API key cleared.");
+}
+
+function loadApiKeyFromMIT(key){
+  if(!key) return;
+  apiKey = key;
+  localStorage.setItem("openrouter_key", key);
+  const input = document.getElementById("apiKeyInput");
+  if(input) input.value = key;
+  setStatus("Saved API key loaded.");
+}
+
+function setStatus(text, error=false){
+  const el = document.getElementById("keyStatus");
+  if(el){ el.textContent = text; el.style.color = error ? "var(--red)" : "var(--green-dark)"; }
+}
+
+function toggleKey(){
+  const input = document.getElementById("apiKeyInput");
+  input.type = input.type === "password" ? "text" : "password";
+}
+
+function goSettings(){ switchScreen("settings"); }
+
+function switchScreen(name){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  const screen = document.getElementById("screen-"+name);
+  if(screen) screen.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  const nav = document.getElementById("nav-"+name);
+  if(nav) nav.classList.add("active");
+}
+
+function renderTopics(){
+  document.getElementById("topicGrid").innerHTML = topics.map(t=>`
+    <button class="topic-card" id="topic-${t.id}" onclick="selectTopic('${t.id}')">
+      <div class="emoji">${t.emoji}</div>
+      <h3>${t.title}</h3>
+      <p class="sub">Tap to study</p>
+    </button>
+  `).join("");
+}
+
+function selectTopic(id){
+  selectedTopic = topics.find(t=>t.id===id);
+  document.querySelectorAll(".topic-card").forEach(c=>c.classList.remove("active"));
+  document.getElementById("topic-"+id).classList.add("active");
+  document.getElementById("lessonTitle").textContent = selectedTopic.emoji + " " + selectedTopic.title;
+  document.getElementById("lessonContent").innerHTML = selectedTopic.lesson;
+  document.getElementById("quizStatus").textContent = "Ready to generate a quiz about " + selectedTopic.title + ".";
+}
+
+function renderClassifications(){
+  document.getElementById("classifyList").innerHTML = classifications.map(c=>`
+    <div class="class-card">
+      <div class="class-head">
+        <div class="class-img" style="background:${c.imgBg}">${c.emoji}</div>
+        <div>
+          <h3 style="font-family:Nunito;font-size:18px;font-weight:900">${c.name}</h3>
+          <span class="badge" style="background:${c.imgBg};color:var(--text)">${c.badge}</span>
+          <p class="sub" style="margin-top:6px">Tap below to view examples and disposal tip.</p>
+        </div>
+      </div>
+      <button class="btn btn-secondary" style="width:100%;margin-top:12px" onclick="toggleExamples('${c.id}')">View Examples + Tip</button>
+      <div class="examples" id="examples-${c.id}">
+        <b>Examples:</b><br>${c.examples.map(e=>"• "+e).join("<br>")}
+        <br><br><b>Disposal Tip:</b><br>${c.tip}
+      </div>
+    </div>
+  `).join("");
+}
+
+function toggleExamples(id){
+  document.getElementById("examples-"+id).classList.toggle("show");
+}
+
+async function generateQuiz(){
+  if(!selectedTopic){ document.getElementById("quizStatus").textContent="Choose a lesson topic first."; return; }
+  if(!apiKey){ document.getElementById("quizStatus").textContent="Please save your API key first in Settings."; switchScreen("settings"); return; }
+  const count = Number(document.getElementById("quizCount").value || 5);
+  const status = document.getElementById("quizStatus");
+  status.textContent = "Generating quiz...";
+  quizData = [];
+  answersShown = false;
+
+  const prompt = `Create exactly ${count} multiple-choice quiz questions about ${selectedTopic.title} for Filipino students learning waste management.
+Return ONLY valid JSON, no markdown, no explanation.
+Format:
+[
+ {"question":"...","options":["A","B","C","D"],"answerIndex":0,"explanation":"short explanation"}
+]`;
+
+  const models = [
+    "google/gemini-2.0-flash-001",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
+    "meta-llama/llama-4-maverick:free"
+  ];
+
+  let lastErr = "";
+  for(const model of models){
+    try{
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions",{
+        method:"POST",
+        headers:{
+          "Authorization":"Bearer "+apiKey,
+          "Content-Type":"application/json",
+          "HTTP-Referer": location.href,
+          "X-Title":"WasteWise"
+        },
+        body:JSON.stringify({
+          model,
+          messages:[{role:"user",content:prompt}],
+          max_tokens:1600
+        })
+      });
+      const data = await res.json();
+      if(data.error) throw new Error(data.error.message || "API error");
+      const text = data.choices?.[0]?.message?.content || "";
+      const clean = text.replace(/```json|```/g,"").trim();
+      quizData = JSON.parse(clean);
+      if(!Array.isArray(quizData) || !quizData.length) throw new Error("Invalid quiz JSON");
+      status.textContent = "Quiz ready. Open the quiz popup.";
+      renderQuiz();
+      openQuiz();
+      return;
+    }catch(e){
+      lastErr = e.message;
+    }
+  }
+  status.textContent = "Could not generate quiz: " + lastErr;
+}
+
+function renderQuiz(){
+  const box = document.getElementById("quizQuestions");
+  document.getElementById("quizTopicLabel").textContent = selectedTopic ? selectedTopic.title : "WasteWise Quiz";
+  document.getElementById("scoreBox").classList.remove("show");
+  document.getElementById("scoreBox").innerHTML = "";
+  document.getElementById("quizSheet").classList.remove("answers-shown");
+  document.getElementById("submitQuizBtn").disabled = false;
+
+  if(!quizData.length){
+    box.innerHTML = `<div class="card"><p class="sub">No quiz generated yet.</p></div>`;
+    return;
+  }
+
+  box.innerHTML = quizData.map((q,qi)=>`
+    <div class="q-card" id="q-${qi}">
+      <div class="q-title">${qi+1}. ${escapeHtml(q.question)}</div>
+      ${(q.options||[]).map((op,oi)=>`
+        <label class="option" id="q-${qi}-op-${oi}">
+          <input type="radio" name="q-${qi}" value="${oi}">
+          ${escapeHtml(op)}
+        </label>
+      `).join("")}
+      <div class="answer-note" id="note-${qi}">
+        <b>Answer:</b> ${escapeHtml((q.options||[])[q.answerIndex] || "")}<br>
+        <b>Why:</b> ${escapeHtml(q.explanation || "")}
+      </div>
+    </div>
+  `).join("");
+}
+
+function submitQuiz(){
+  if(!quizData.length) return;
+  let score = 0;
+  quizData.forEach((q,qi)=>{
+    const selected = document.querySelector(`input[name="q-${qi}"]:checked`);
+    const chosen = selected ? Number(selected.value) : -1;
+    if(chosen === q.answerIndex) score++;
+    (q.options||[]).forEach((_,oi)=>{
+      const opt = document.getElementById(`q-${qi}-op-${oi}`);
+      if(!opt) return;
+      if(oi === q.answerIndex) opt.classList.add("correct");
+      if(oi === chosen && chosen !== q.answerIndex) opt.classList.add("wrong");
+    });
+  });
+  const scoreBox = document.getElementById("scoreBox");
+  scoreBox.classList.add("show");
+  scoreBox.innerHTML = `<b>Your Score:</b> ${score} / ${quizData.length}<br><span class="sub">Correct answers and explanations are now visible.</span>`;
+  document.getElementById("quizSheet").classList.add("answers-shown");
+  document.getElementById("submitQuizBtn").disabled = true;
+}
+
+function openQuiz(){
+  document.getElementById("quizOverlay").classList.add("open");
+  document.getElementById("quizSheet").classList.add("open");
+  if(!quizData.length) renderQuiz();
+}
+
+function closeQuiz(){
+  document.getElementById("quizOverlay").classList.remove("open");
+  document.getElementById("quizSheet").classList.remove("open");
+}
+
+function clearQuiz(){
+  quizData = [];
+  answersShown = false;
+  document.getElementById("quizStatus").textContent = "Previous quiz cleared.";
+  renderQuiz();
+  closeQuiz();
+}
+
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+
+window.addEventListener("load",()=>{
   renderTopics();
-  renderClassify();
-  setupApiInputAutosave();
-  const keyInput=document.getElementById('apiKeyInput'); if(keyInput) keyInput.value=apiKey;
-  setStatus(apiKey?'API key loaded from browser storage.':'No saved API key.');
-  setTimeout(()=>sendToMIT('REQUEST_KEY'),500);
-  setTimeout(()=>sendToMIT('REQUEST_KEY'),1500);
+  renderClassifications();
+  renderQuiz();
+  if(apiKey) document.getElementById("apiKeyInput").value = apiKey;
+  safeMITSend("REQUEST_KEY");
 });
 </script>
 </body>
