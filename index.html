@@ -14,7 +14,7 @@
 
 <main id="home" class="screen active">
   <section class="hero"><h1>Learn waste segregation smarter.</h1><p>Study short lessons, generate AI quizzes, and classify common trash with disposal tips.</p></section>
-  <section class="card" id="apiCard"><div class="api-head"><div><h3>🔑 OpenRouter API Key</h3><p class="muted">Saved through MIT TinyDB when available, and local storage in browser/APK.</p></div><button class="btn secondary" onclick="toggleApi()" id="apiToggle">Minimize</button></div><div class="api-body" id="apiBody"><input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off"><div class="btnrow"><button type="button" class="btn" id="saveKeyBtn" onclick="saveApiKey()">Save Key</button><button type="button" class="btn ghost" id="toggleKeyBtn" onclick="toggleKeyVisible()">Show/Hide</button><button type="button" class="btn danger" id="clearKeyBtn" onclick="clearApiKey()">Clear</button></div><div class="status" id="apiStatus">Key not loaded yet.</div></div></section>
+  <section class="card" id="apiCard"><div class="api-head"><div><h3>🔑 OpenRouter API Key</h3><p class="muted">Saved through MIT TinyDB when available, and local storage in browser/APK.</p></div><button class="btn secondary" onclick="toggleApi()" id="apiToggle">Minimize</button></div><div class="api-body" id="apiBody"><input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off"><div class="btnrow"><button type="button" class="btn" id="saveKeyBtn" onclick="saveApiKey(event)" ontouchend="saveApiKey(event)">Save Key</button><button type="button" class="btn ghost" id="toggleKeyBtn" onclick="toggleKeyVisible()">Show/Hide</button><button type="button" class="btn danger" id="clearKeyBtn" onclick="clearApiKey(event)" ontouchend="clearApiKey(event)">Clear</button></div><div class="status" id="apiStatus">Key not loaded yet.</div></div></section>
   <section class="card"><h2>Start here</h2><p class="muted">Go to Lesson, choose a topic, then take a quiz. Answers only show after finishing.</p><div class="btnrow"><button class="btn" onclick="go('lesson')">Open Lessons</button><button class="btn secondary" onclick="go('classify')">View Classification</button></div></section>
 </main>
 
@@ -47,23 +47,35 @@ function formatLesson(t){t=cleanAIText(t);let lines=t.split(/\n+/).map(x=>x.trim
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));document.getElementById('nav-'+id).classList.add('active');}
 function toggleApi(forceOpen){const body=document.getElementById('apiBody');const btn=document.getElementById('apiToggle');const closed=body.classList.contains('collapsed');const open=forceOpen===false?true:closed;body.classList.toggle('collapsed',!open);btn.textContent=open?'Minimize':'Open';}
 function toggleKeyVisible(){const input=document.getElementById('apiKeyInput');input.type=input.type==='password'?'text':'password';}
-function sendToMIT(message){try{if(window.AppInventor){window.AppInventor.setWebViewString(message);return true;}}catch(e){}return false;}
-function saveApiKey(){
+function sendToMIT(message){
+  let sent=false;
+  try{
+    if(window.AppInventor && typeof window.AppInventor.setWebViewString === 'function'){
+      window.AppInventor.setWebViewString(message);
+      sent=true;
+    }
+  }catch(e){}
+  return sent;
+}
+function saveApiKey(ev){
+  if(ev){ev.preventDefault(); ev.stopPropagation();}
   const input=document.getElementById('apiKeyInput');
   const val=(input.value||'').trim();
-  if(!val){setStatus('Enter API key first.'); input.focus(); return;}
+  if(!val){setStatus('Enter API key first.'); input.focus(); return false;}
   apiKey=val;
   try{localStorage.setItem('openrouter_key',val);}catch(e){}
-  setStatus('Saving key...');
-  // Delay helps MIT WebViewer finish the button click before WebViewString changes.
-  setTimeout(()=>{sendToMIT('SAVE_KEY:'+val); setStatus('API key saved.');},80);
+  const sent=sendToMIT('SAVE_KEY:'+val);
+  setStatus(sent ? 'API key saved to app storage.' : 'API key saved in browser only. If using MIT, check WebViewer bridge.');
+  return false;
 }
-function clearApiKey(){
+function clearApiKey(ev){
+  if(ev){ev.preventDefault(); ev.stopPropagation();}
   apiKey='';
   try{localStorage.removeItem('openrouter_key');}catch(e){}
   document.getElementById('apiKeyInput').value='';
-  setStatus('Clearing key...');
-  setTimeout(()=>{sendToMIT('CLEAR_KEY'); setStatus('API key cleared.');},80);
+  const sent=sendToMIT('CLEAR_KEY');
+  setStatus(sent ? 'API key cleared from app storage.' : 'API key cleared in browser only.');
+  return false;
 }
 function loadApiKeyFromMIT(key){
   key=(key||'').trim();
@@ -96,7 +108,8 @@ window.addEventListener('load',()=>{
   renderClassify();
   document.getElementById('apiKeyInput').value=apiKey;
   setStatus(apiKey?'API key loaded from browser storage.':'No saved API key.');
-  setTimeout(()=>sendToMIT('REQUEST_KEY'),300);
+  setTimeout(()=>sendToMIT('REQUEST_KEY'),500);
+  setTimeout(()=>sendToMIT('REQUEST_KEY'),1500);
 });
 </script>
 </body>
