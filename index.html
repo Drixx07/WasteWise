@@ -10,12 +10,27 @@
 </style>
 </head>
 <body>
-<header class="topbar"><div class="logo">Waste<span>Wise</span></div><button class="settings-mini" onclick="go('home');toggleApi(false)">⚙️ API</button></header>
+<header class="topbar"><div class="logo">Waste<span>Wise</span></div><button type="button" class="settings-mini" onclick="openSettings(event)" ontouchend="openSettings(event)">⚙️ Settings</button></header>
 
 <main id="home" class="screen active">
   <section class="hero"><h1>Learn waste segregation smarter.</h1><p>Study short lessons, generate AI quizzes, and classify common trash with disposal tips.</p></section>
-  <section class="card" id="apiCard"><div class="api-head"><div><h3>🔑 OpenRouter API Key</h3><p class="muted">Saved through MIT TinyDB when available, and local storage in browser/APK.</p></div><button class="btn secondary" onclick="toggleApi()" id="apiToggle">Minimize</button></div><div class="api-body" id="apiBody"><input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off"><div class="btnrow"><button type="button" class="btn" id="saveKeyBtn" onclick="saveApiKey(event)" ontouchend="saveApiKey(event)">Save Key</button><button type="button" class="btn ghost" id="toggleKeyBtn" onclick="toggleKeyVisible()">Show/Hide</button><button type="button" class="btn danger" id="clearKeyBtn" onclick="clearApiKey(event)" ontouchend="clearApiKey(event)">Clear</button></div><div class="status" id="apiStatus">Key not loaded yet.</div></div></section>
+  
   <section class="card"><h2>Start here</h2><p class="muted">Go to Lesson, choose a topic, then take a quiz. Answers only show after finishing.</p><div class="btnrow"><button class="btn" onclick="go('lesson')">Open Lessons</button><button class="btn secondary" onclick="go('classify')">View Classification</button></div></section>
+</main>
+<main id="settings" class="screen">
+  <section class="hero"><h1>Settings</h1><p>Save your OpenRouter API key here. This page is used instead of a popup so it works better in MIT App Inventor.</p></section>
+  <section class="card" id="apiCard">
+    <h2>🔑 OpenRouter API Key</h2>
+    <p class="muted">Your key is saved through MIT TinyDB when available, and browser storage when opened outside MIT.</p>
+    <input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="btnrow">
+      <button type="button" class="btn" id="saveKeyBtn" data-api-action="save" onclick="return saveApiKey(event)" ontouchend="return saveApiKey(event)">Save Key</button>
+      <button type="button" class="btn ghost" id="toggleKeyBtn" data-api-action="toggle" onclick="return toggleKeyVisible(event)" ontouchend="return toggleKeyVisible(event)">Show/Hide</button>
+      <button type="button" class="btn danger" id="clearKeyBtn" data-api-action="clear" onclick="return clearApiKey(event)" ontouchend="return clearApiKey(event)">Clear Key</button>
+    </div>
+    <div class="status" id="apiStatus">Key not loaded yet.</div>
+    <div class="btnrow"><button type="button" class="btn secondary" onclick="go('home')">Back to Home</button></div>
+  </section>
 </main>
 
 <main id="lesson" class="screen">
@@ -44,9 +59,32 @@ const waste=[{id:'bio',name:'Biodegradable',emoji:'🍃',badge:'Green bin / comp
 function safeText(s){return String(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
 function cleanAIText(t){t=String(t||'').replace(/```html|```/gi,'').replace(/<[^>]*>/g,'').replace(/\*\*/g,'').replace(/#+\s*/g,'').replace(/`/g,'').trim();return t;}
 function formatLesson(t){t=cleanAIText(t);let lines=t.split(/\n+/).map(x=>x.trim()).filter(Boolean);if(!lines.length)return '<p>No lesson generated. Try again.</p>';return lines.map((l,i)=> i===0?`<h3>${safeText(l)}</h3>`:`<p>${safeText(l).replace(/^[-•]\s*/,'• ')}</p>`).join('');}
-function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));document.getElementById('nav-'+id).classList.add('active');}
-function toggleApi(forceOpen){const body=document.getElementById('apiBody');const btn=document.getElementById('apiToggle');const closed=body.classList.contains('collapsed');const open=forceOpen===false?true:closed;body.classList.toggle('collapsed',!open);btn.textContent=open?'Minimize':'Open';}
-function toggleKeyVisible(){const input=document.getElementById('apiKeyInput');input.type=input.type==='password'?'text':'password';}
+function go(id){
+  const target=document.getElementById(id);
+  if(!target) return;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  target.classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  const nav=document.getElementById('nav-'+id);
+  if(nav) nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+function openSettings(ev){
+  if(ev){ev.preventDefault(); ev.stopPropagation();}
+  go('settings');
+  setTimeout(()=>{
+    const input=document.getElementById('apiKeyInput');
+    if(input){ input.value = apiKey || input.value; }
+    sendToMIT('REQUEST_KEY');
+  },150);
+  return false;
+}
+function toggleKeyVisible(ev){
+  if(ev){ev.preventDefault(); ev.stopPropagation();}
+  const input=document.getElementById('apiKeyInput');
+  if(input) input.type=input.type==='password'?'text':'password';
+  return false;
+}
 function sendToMIT(message){
   let sent=false;
   try{
@@ -60,37 +98,39 @@ function sendToMIT(message){
 function saveApiKey(ev){
   if(ev){ev.preventDefault(); ev.stopPropagation();}
   const input=document.getElementById('apiKeyInput');
-  const val=(input.value||'').trim();
-  if(!val){setStatus('Enter API key first.'); input.focus(); return false;}
+  const val=(input?.value||'').trim();
+  if(!val){setStatus('Enter API key first.'); if(input) input.focus(); return false;}
   apiKey=val;
   try{localStorage.setItem('openrouter_key',val);}catch(e){}
   const sent=sendToMIT('SAVE_KEY:'+val);
-  setStatus(sent ? 'API key saved to app storage.' : 'API key saved in browser only. If using MIT, check WebViewer bridge.');
+  setStatus(sent ? 'API key saved to app storage.' : 'API key saved in browser storage.');
   return false;
 }
 function clearApiKey(ev){
   if(ev){ev.preventDefault(); ev.stopPropagation();}
   apiKey='';
   try{localStorage.removeItem('openrouter_key');}catch(e){}
-  document.getElementById('apiKeyInput').value='';
+  const input=document.getElementById('apiKeyInput');
+  if(input) input.value='';
   const sent=sendToMIT('CLEAR_KEY');
-  setStatus(sent ? 'API key cleared from app storage.' : 'API key cleared in browser only.');
+  setStatus(sent ? 'API key cleared from app storage.' : 'API key cleared in browser storage.');
   return false;
 }
 function loadApiKeyFromMIT(key){
   key=(key||'').trim();
+  const input=document.getElementById('apiKeyInput');
   if(key){
     apiKey=key;
     try{localStorage.setItem('openrouter_key',key);}catch(e){}
-    document.getElementById('apiKeyInput').value=key;
+    if(input) input.value=key;
     setStatus('API key loaded from app storage.');
   }else{
-    document.getElementById('apiKeyInput').value=apiKey;
+    if(input) input.value=apiKey;
     setStatus(apiKey?'API key loaded from browser storage.':'No saved API key.');
   }
 }
 function setStatus(t){const el=document.getElementById('apiStatus'); if(el) el.textContent=t;}
-async function openRouter(messages,maxTokens=900){if(!apiKey){toggleApi(false);throw new Error('Please save your API key first.');}const models=['google/gemini-2.0-flash-001','google/gemini-2.5-flash-preview:free','mistralai/mistral-small-3.1-24b-instruct:free','meta-llama/llama-4-maverick:free'];let last='';for(const model of models){try{const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'WasteWise'},body:JSON.stringify({model,messages,max_tokens:maxTokens})});const d=await r.json();if(d.error)throw new Error(d.error.message||'API error');return d.choices?.[0]?.message?.content||'';}catch(e){last=e.message;}}throw new Error(last||'All models failed.');}
+async function openRouter(messages,maxTokens=900){if(!apiKey){go('settings');throw new Error('Please save your API key first.');}const models=['google/gemini-2.0-flash-001','google/gemini-2.5-flash-preview:free','mistralai/mistral-small-3.1-24b-instruct:free','meta-llama/llama-4-maverick:free'];let last='';for(const model of models){try{const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'WasteWise'},body:JSON.stringify({model,messages,max_tokens:maxTokens})});const d=await r.json();if(d.error)throw new Error(d.error.message||'API error');return d.choices?.[0]?.message?.content||'';}catch(e){last=e.message;}}throw new Error(last||'All models failed.');}
 function renderTopics(){document.getElementById('topicGrid').innerHTML=topics.map(([t,d])=>`<button class="topic" onclick="selectTopic('${safeText(t)}','${safeText(d)}')"><strong>${safeText(t)}</strong><span>${safeText(d)}</span></button>`).join('');}
 function selectTopic(t,d){selectedTopic=t;document.getElementById('selectedTopicTitle').textContent=t;document.getElementById('selectedTopicDesc').textContent=d;}
 async function generateLesson(){const load=document.getElementById('lessonLoading');load.classList.add('show');try{const txt=await openRouter([{role:'user',content:`Create a concise student-friendly lesson about ${selectedTopic} in waste management. Return plain text only. Do not include HTML code, markdown instructions, or formatting guide. Include: definition, examples, importance, and disposal reminders.`}],900);document.getElementById('lessonContent').innerHTML=formatLesson(txt);}catch(e){document.getElementById('lessonContent').innerHTML=`<p style="color:var(--red)">${safeText(e.message)}</p>`;}finally{load.classList.remove('show');}}
@@ -103,10 +143,27 @@ function renderQuiz(){const box=document.getElementById('quizBox');box.innerHTML
 function finishQuiz(){if(!quizData.length)return;let score=0;quizData.forEach((q,i)=>{const chosen=document.querySelector(`input[name="q${i}"]:checked`);if(chosen&&chosen.value===q.answer)score++;document.getElementById('ans'+i).classList.add('show');});const s=document.getElementById('scoreBox');s.textContent=`Score: ${score}/${quizData.length}. Answers are now visible below each item.`;s.classList.add('show');}
 function renderClassify(){document.getElementById('classifyList').innerHTML=waste.map(w=>`<section class="card waste-card"><div class="waste-img">${w.emoji}</div><div><h3>${w.name}</h3><span class="badge">${w.badge}</span><p class="muted">Tap below to view examples and disposal tips.</p><button class="btn secondary" onclick="toggleExamples('${w.id}')">View examples + tip</button><div class="examples" id="ex-${w.id}"><b>Examples:</b><br>${w.examples.map(e=>'• '+safeText(e)).join('<br>')}<br><br><b>Disposal tip:</b> ${safeText(w.tip)}</div></div></section>`).join('');}
 function toggleExamples(id){document.getElementById('ex-'+id).classList.toggle('show');}
+
+document.addEventListener('click', function(e){
+  const btn=e.target.closest('[data-api-action]');
+  if(!btn) return;
+  const act=btn.getAttribute('data-api-action');
+  if(act==='save') saveApiKey(e);
+  if(act==='clear') clearApiKey(e);
+  if(act==='toggle') toggleKeyVisible(e);
+}, true);
+document.addEventListener('touchend', function(e){
+  const btn=e.target.closest('[data-api-action]');
+  if(!btn) return;
+  const act=btn.getAttribute('data-api-action');
+  if(act==='save') saveApiKey(e);
+  if(act==='clear') clearApiKey(e);
+  if(act==='toggle') toggleKeyVisible(e);
+}, true);
 window.addEventListener('load',()=>{
   renderTopics();
   renderClassify();
-  document.getElementById('apiKeyInput').value=apiKey;
+  const keyInput=document.getElementById('apiKeyInput'); if(keyInput) keyInput.value=apiKey;
   setStatus(apiKey?'API key loaded from browser storage.':'No saved API key.');
   setTimeout(()=>sendToMIT('REQUEST_KEY'),500);
   setTimeout(()=>sendToMIT('REQUEST_KEY'),1500);
