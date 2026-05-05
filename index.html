@@ -6,7 +6,7 @@
 <title>WasteWise – Learn, Quiz, Classify</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#2e9e60;--green2:#1e7a47;--light:#e8f5ee;--bg:#f4f7f5;--card:#fff;--text:#172033;--sub:#6b7280;--border:#e5e7eb;--red:#e03131;--blue:#2563eb;--orange:#f76707;--nav:76px;--header:62px}*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}.topbar{height:var(--header);position:fixed;top:0;left:0;right:0;z-index:20;background:linear-gradient(135deg,var(--green2),var(--green),#60d394);display:flex;align-items:center;justify-content:space-between;padding:0 18px;color:#fff}.logo{font-family:'Nunito';font-size:23px;font-weight:900}.logo span{opacity:.85}.settings-mini{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:13px;padding:9px 11px;font-weight:800}.screen{display:none;padding:calc(var(--header) + 14px) 16px calc(var(--nav) + 18px)}.screen.active{display:block}.hero{border-radius:24px;padding:20px;margin-bottom:14px;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;box-shadow:0 14px 28px rgba(46,158,96,.22)}.hero h1{font-family:'Nunito';font-size:28px;line-height:1.05;margin-bottom:7px}.hero p{font-size:14px;opacity:.9;line-height:1.5}.card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.card h2,.card h3{font-family:'Nunito';font-weight:900;margin-bottom:8px}.muted{color:var(--sub);font-size:13px;line-height:1.5}.btn{border:0;border-radius:16px;padding:12px 14px;background:var(--green);color:#fff;font-family:'Nunito';font-weight:900;font-size:14px;box-shadow:0 8px 18px rgba(46,158,96,.22)}.btn.secondary{background:var(--light);color:var(--green2);box-shadow:none}.btn.ghost{background:#fff;color:var(--green2);border:1px solid #b7e4c7;box-shadow:none}.btn.danger{background:#fff5f5;color:var(--red);box-shadow:none}.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.input,.select{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:12px 13px;font-size:14px;background:#fff;outline:none;margin-top:8px}.input:focus,.select:focus{border-color:var(--green)}.api-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.api-body{display:block;margin-top:10px}.api-body.collapsed{display:none}.status{font-size:12px;margin-top:8px;color:var(--sub)}.nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);z-index:30;background:#fff;border-top:1px solid var(--border);display:flex;box-shadow:0 -10px 22px rgba(15,23,42,.05)}.nav button{flex:1;border:0;background:#fff;color:#9ca3af;font-weight:800;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}.nav button .ico{font-size:23px}.nav button.active{color:var(--green)}.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.topic{padding:14px;border-radius:18px;background:#fff;border:1px solid var(--border);text-align:left}.topic strong{display:block;font-family:'Nunito';font-size:15px;margin-bottom:4px}.topic span{font-size:12px;color:var(--sub)}.lesson-content{line-height:1.6;font-size:14px}.lesson-content h3{font-family:'Nunito';font-size:20px;margin:10px 0 7px}.lesson-content p{margin:9px 0}.lesson-content ul{padding-left:20px;margin:8px 0}.lesson-content li{margin:5px 0}.quiz-panel{display:none}.quiz-panel.active{display:block}.q-card{border:1px solid var(--border);border-radius:18px;padding:13px;margin:10px 0;background:#fff}.option{display:block;border:1px solid var(--border);border-radius:13px;padding:10px;margin-top:8px}.option input{margin-right:8px}.answer-key{display:none;margin-top:10px;padding:10px;border-radius:13px;background:#f0fdf4;color:#14532d;font-size:13px}.answer-key.show{display:block}.scorebox{display:none;border-radius:18px;background:#ecfdf5;color:#14532d;padding:14px;margin:12px 0;font-weight:800}.scorebox.show{display:block}.waste-card{display:flex;gap:13px;align-items:flex-start}.waste-img{width:68px;height:68px;border-radius:18px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0}.badge{display:inline-block;margin:6px 0;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:900;background:var(--light);color:var(--green2)}.examples{display:none;margin-top:10px;padding:12px;border-radius:16px;background:#f9fafb;font-size:13px;line-height:1.55}.examples.show{display:block}.modal{position:fixed;inset:0;background:rgba(15,23,42,.52);z-index:60;display:none;align-items:flex-end}.modal.show{display:flex}.sheet{background:#fff;border-radius:24px 24px 0 0;max-height:86vh;overflow:auto;width:100%;padding:18px}.sheet-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.x{border:0;background:#f3f4f6;border-radius:12px;padding:8px 11px;font-weight:900}.loading{display:none;align-items:center;gap:8px;color:var(--sub);font-size:13px;margin-top:8px}.loading.show{display:flex}.spin{width:18px;height:18px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}pre{white-space:pre-wrap;font-family:inherit}.quick-list{display:grid;gap:8px}.quick-list button{text-align:left}.hide{display:none!important}
+:root{--green:#2e9e60;--green2:#1e7a47;--light:#e8f5ee;--bg:#f4f7f5;--card:#fff;--text:#172033;--sub:#6b7280;--border:#e5e7eb;--red:#e03131;--blue:#2563eb;--orange:#f76707;--nav:76px;--header:62px}*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}.topbar{height:var(--header);position:fixed;top:0;left:0;right:0;z-index:20;background:linear-gradient(135deg,var(--green2),var(--green),#60d394);display:flex;align-items:center;justify-content:space-between;padding:0 18px;color:#fff}.logo{font-family:'Nunito';font-size:23px;font-weight:900}.logo span{opacity:.85}.settings-mini{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:13px;padding:9px 11px;font-weight:800}.screen{display:none;padding:calc(var(--header) + 14px) 16px calc(var(--nav) + 18px)}.screen.active{display:block}.hero{border-radius:24px;padding:20px;margin-bottom:14px;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;box-shadow:0 14px 28px rgba(46,158,96,.22)}.hero h1{font-family:'Nunito';font-size:28px;line-height:1.05;margin-bottom:7px}.hero p{font-size:14px;opacity:.9;line-height:1.5}.card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.card h2,.card h3{font-family:'Nunito';font-weight:900;margin-bottom:8px}.muted{color:var(--sub);font-size:13px;line-height:1.5}.btn{border:0;border-radius:16px;padding:12px 14px;background:var(--green);color:#fff;font-family:'Nunito';font-weight:900;font-size:14px;box-shadow:0 8px 18px rgba(46,158,96,.22)}.btn.secondary{background:var(--light);color:var(--green2);box-shadow:none}.btn.ghost{background:#fff;color:var(--green2);border:1px solid #b7e4c7;box-shadow:none}.btn.danger{background:#fff5f5;color:var(--red);box-shadow:none}.tapbtn{user-select:none;text-align:center;touch-action:manipulation}.api-actions{margin-top:12px}.api-actions .tapbtn{min-width:98px}.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.input,.select{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:12px 13px;font-size:14px;background:#fff;outline:none;margin-top:8px}.input:focus,.select:focus{border-color:var(--green)}.api-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.api-body{display:block;margin-top:10px}.api-body.collapsed{display:none}.status{font-size:12px;margin-top:8px;color:var(--sub)}.nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);z-index:30;background:#fff;border-top:1px solid var(--border);display:flex;box-shadow:0 -10px 22px rgba(15,23,42,.05)}.nav button{flex:1;border:0;background:#fff;color:#9ca3af;font-weight:800;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}.nav button .ico{font-size:23px}.nav button.active{color:var(--green)}.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.topic{padding:14px;border-radius:18px;background:#fff;border:1px solid var(--border);text-align:left}.topic strong{display:block;font-family:'Nunito';font-size:15px;margin-bottom:4px}.topic span{font-size:12px;color:var(--sub)}.lesson-content{line-height:1.6;font-size:14px}.lesson-content h3{font-family:'Nunito';font-size:20px;margin:10px 0 7px}.lesson-content p{margin:9px 0}.lesson-content ul{padding-left:20px;margin:8px 0}.lesson-content li{margin:5px 0}.quiz-panel{display:none}.quiz-panel.active{display:block}.q-card{border:1px solid var(--border);border-radius:18px;padding:13px;margin:10px 0;background:#fff}.option{display:block;border:1px solid var(--border);border-radius:13px;padding:10px;margin-top:8px}.option input{margin-right:8px}.answer-key{display:none;margin-top:10px;padding:10px;border-radius:13px;background:#f0fdf4;color:#14532d;font-size:13px}.answer-key.show{display:block}.scorebox{display:none;border-radius:18px;background:#ecfdf5;color:#14532d;padding:14px;margin:12px 0;font-weight:800}.scorebox.show{display:block}.waste-card{display:flex;gap:13px;align-items:flex-start}.waste-img{width:68px;height:68px;border-radius:18px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0}.badge{display:inline-block;margin:6px 0;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:900;background:var(--light);color:var(--green2)}.examples{display:none;margin-top:10px;padding:12px;border-radius:16px;background:#f9fafb;font-size:13px;line-height:1.55}.examples.show{display:block}.modal{position:fixed;inset:0;background:rgba(15,23,42,.52);z-index:60;display:none;align-items:flex-end}.modal.show{display:flex}.sheet{background:#fff;border-radius:24px 24px 0 0;max-height:86vh;overflow:auto;width:100%;padding:18px}.sheet-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.x{border:0;background:#f3f4f6;border-radius:12px;padding:8px 11px;font-weight:900}.loading{display:none;align-items:center;gap:8px;color:var(--sub);font-size:13px;margin-top:8px}.loading.show{display:flex}.spin{width:18px;height:18px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}pre{white-space:pre-wrap;font-family:inherit}.quick-list{display:grid;gap:8px}.quick-list button{text-align:left}.hide{display:none!important}
 </style>
 </head>
 <body>
@@ -21,15 +21,16 @@
   <section class="hero"><h1>Settings</h1><p>Save your OpenRouter API key here. This page is used instead of a popup so it works better in MIT App Inventor.</p></section>
   <section class="card" id="apiCard">
     <h2>🔑 OpenRouter API Key</h2>
-    <p class="muted">Your key is saved through MIT TinyDB when available, and browser storage when opened outside MIT.</p>
+    <p class="muted">Paste your key below. In MIT App Inventor, the key auto-saves while typing/pasting, so you do not have to rely on button clicks.</p>
     <input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off" autocapitalize="off" spellcheck="false">
-    <div class="btnrow">
-      <button type="button" class="btn" id="saveKeyBtn" data-api-action="save" onclick="return saveApiKey(event)" ontouchend="return saveApiKey(event)">Save Key</button>
-      <button type="button" class="btn ghost" id="toggleKeyBtn" data-api-action="toggle" onclick="return toggleKeyVisible(event)" ontouchend="return toggleKeyVisible(event)">Show/Hide</button>
-      <button type="button" class="btn danger" id="clearKeyBtn" data-api-action="clear" onclick="return clearApiKey(event)" ontouchend="return clearApiKey(event)">Clear Key</button>
-    </div>
     <div class="status" id="apiStatus">Key not loaded yet.</div>
-    <div class="btnrow"><button type="button" class="btn secondary" onclick="go('home')">Back to Home</button></div>
+    <div class="btnrow api-actions">
+      <div class="btn tapbtn" id="saveKeyBtn" data-api-action="save" role="button" tabindex="0">Save Key</div>
+      <div class="btn ghost tapbtn" id="toggleKeyBtn" data-api-action="toggle" role="button" tabindex="0">Show/Hide</div>
+      <div class="btn danger tapbtn" id="clearKeyBtn" data-api-action="clear" role="button" tabindex="0">Clear Key</div>
+    </div>
+    <p class="muted" style="margin-top:10px">Tip: after pasting the key, wait for the status to say “Auto-saved”.</p>
+    <div class="btnrow"><div class="btn secondary tapbtn" onclick="go('home')" role="button">Back to Home</div></div>
   </section>
 </main>
 
@@ -95,23 +96,36 @@ function sendToMIT(message){
   }catch(e){}
   return sent;
 }
+function saveKeyValue(val, reason){
+  val=(val||'').trim();
+  const input=document.getElementById('apiKeyInput');
+  if(!val){
+    apiKey='';
+    try{localStorage.removeItem('openrouter_key');}catch(e){}
+    sendToMIT('CLEAR_KEY');
+    setStatus('API key cleared.');
+    return false;
+  }
+  apiKey=val;
+  try{localStorage.setItem('openrouter_key',val);}catch(e){}
+  const sent=sendToMIT('SAVE_KEY:'+val);
+  setStatus(sent ? (reason || 'API key saved to app storage.') : (reason || 'API key saved in browser storage.'));
+  if(input) input.blur();
+  return false;
+}
 function saveApiKey(ev){
   if(ev){ev.preventDefault(); ev.stopPropagation();}
   const input=document.getElementById('apiKeyInput');
   const val=(input?.value||'').trim();
   if(!val){setStatus('Enter API key first.'); if(input) input.focus(); return false;}
-  apiKey=val;
-  try{localStorage.setItem('openrouter_key',val);}catch(e){}
-  const sent=sendToMIT('SAVE_KEY:'+val);
-  setStatus(sent ? 'API key saved to app storage.' : 'API key saved in browser storage.');
-  return false;
+  return saveKeyValue(val, 'API key saved.');
 }
 function clearApiKey(ev){
   if(ev){ev.preventDefault(); ev.stopPropagation();}
   apiKey='';
   try{localStorage.removeItem('openrouter_key');}catch(e){}
   const input=document.getElementById('apiKeyInput');
-  if(input) input.value='';
+  if(input){input.value=''; input.blur();}
   const sent=sendToMIT('CLEAR_KEY');
   setStatus(sent ? 'API key cleared from app storage.' : 'API key cleared in browser storage.');
   return false;
@@ -144,25 +158,41 @@ function finishQuiz(){if(!quizData.length)return;let score=0;quizData.forEach((q
 function renderClassify(){document.getElementById('classifyList').innerHTML=waste.map(w=>`<section class="card waste-card"><div class="waste-img">${w.emoji}</div><div><h3>${w.name}</h3><span class="badge">${w.badge}</span><p class="muted">Tap below to view examples and disposal tips.</p><button class="btn secondary" onclick="toggleExamples('${w.id}')">View examples + tip</button><div class="examples" id="ex-${w.id}"><b>Examples:</b><br>${w.examples.map(e=>'• '+safeText(e)).join('<br>')}<br><br><b>Disposal tip:</b> ${safeText(w.tip)}</div></div></section>`).join('');}
 function toggleExamples(id){document.getElementById('ex-'+id).classList.toggle('show');}
 
-document.addEventListener('click', function(e){
-  const btn=e.target.closest('[data-api-action]');
-  if(!btn) return;
-  const act=btn.getAttribute('data-api-action');
-  if(act==='save') saveApiKey(e);
-  if(act==='clear') clearApiKey(e);
-  if(act==='toggle') toggleKeyVisible(e);
-}, true);
-document.addEventListener('touchend', function(e){
-  const btn=e.target.closest('[data-api-action]');
-  if(!btn) return;
-  const act=btn.getAttribute('data-api-action');
-  if(act==='save') saveApiKey(e);
-  if(act==='clear') clearApiKey(e);
-  if(act==='toggle') toggleKeyVisible(e);
-}, true);
+function handleApiAction(act, ev){
+  if(ev){ev.preventDefault(); ev.stopPropagation();}
+  if(act==='save') return saveApiKey(ev);
+  if(act==='clear') return clearApiKey(ev);
+  if(act==='toggle') return toggleKeyVisible(ev);
+  return false;
+}
+['touchstart','pointerdown','mousedown','click'].forEach(evt=>{
+  document.addEventListener(evt, function(e){
+    const btn=e.target.closest('[data-api-action]');
+    if(!btn) return;
+    handleApiAction(btn.getAttribute('data-api-action'), e);
+  }, true);
+});
+let apiSaveTimer=null;
+function setupApiInputAutosave(){
+  const input=document.getElementById('apiKeyInput');
+  if(!input) return;
+  input.addEventListener('input', ()=>{
+    clearTimeout(apiSaveTimer);
+    apiSaveTimer=setTimeout(()=>{
+      const val=(input.value||'').trim();
+      if(val){ saveKeyValue(val, 'Auto-saved API key.'); }
+      else { clearApiKey(); }
+    }, 700);
+  });
+  input.addEventListener('change', ()=>{
+    const val=(input.value||'').trim();
+    if(val) saveKeyValue(val, 'API key saved.');
+  });
+}
 window.addEventListener('load',()=>{
   renderTopics();
   renderClassify();
+  setupApiInputAutosave();
   const keyInput=document.getElementById('apiKeyInput'); if(keyInput) keyInput.value=apiKey;
   setStatus(apiKey?'API key loaded from browser storage.':'No saved API key.');
   setTimeout(()=>sendToMIT('REQUEST_KEY'),500);
