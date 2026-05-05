@@ -14,7 +14,7 @@
 
 <main id="home" class="screen active">
   <section class="hero"><h1>Learn waste segregation smarter.</h1><p>Study short lessons, generate AI quizzes, and classify common trash with disposal tips.</p></section>
-  <section class="card" id="apiCard"><div class="api-head"><div><h3>🔑 OpenRouter API Key</h3><p class="muted">Saved through MIT TinyDB when available, and local storage in browser/APK.</p></div><button class="btn secondary" onclick="toggleApi()" id="apiToggle">Minimize</button></div><div class="api-body" id="apiBody"><input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off"><div class="btnrow"><button type="button" class="btn" id="saveKeyBtn">Save Key</button><button type="button" class="btn ghost" id="toggleKeyBtn">Show/Hide</button><button type="button" class="btn danger" id="clearKeyBtn">Clear</button></div><div class="status" id="apiStatus">Key not loaded yet.</div></div></section>
+  <section class="card" id="apiCard"><div class="api-head"><div><h3>🔑 OpenRouter API Key</h3><p class="muted">Saved through MIT TinyDB when available, and local storage in browser/APK.</p></div><button class="btn secondary" onclick="toggleApi()" id="apiToggle">Minimize</button></div><div class="api-body" id="apiBody"><input class="input" id="apiKeyInput" type="password" placeholder="sk-or-v1-..." autocomplete="off"><div class="btnrow"><button type="button" class="btn" id="saveKeyBtn" onclick="saveApiKey()">Save Key</button><button type="button" class="btn ghost" id="toggleKeyBtn" onclick="toggleKeyVisible()">Show/Hide</button><button type="button" class="btn danger" id="clearKeyBtn" onclick="clearApiKey()">Clear</button></div><div class="status" id="apiStatus">Key not loaded yet.</div></div></section>
   <section class="card"><h2>Start here</h2><p class="muted">Go to Lesson, choose a topic, then take a quiz. Answers only show after finishing.</p><div class="btnrow"><button class="btn" onclick="go('lesson')">Open Lessons</button><button class="btn secondary" onclick="go('classify')">View Classification</button></div></section>
 </main>
 
@@ -95,9 +95,6 @@ window.addEventListener('load',()=>{
   renderTopics();
   renderClassify();
   document.getElementById('apiKeyInput').value=apiKey;
-  document.getElementById('saveKeyBtn').addEventListener('click', saveApiKey);
-  document.getElementById('toggleKeyBtn').addEventListener('click', toggleKeyVisible);
-  document.getElementById('clearKeyBtn').addEventListener('click', clearApiKey);
   setStatus(apiKey?'API key loaded from browser storage.':'No saved API key.');
   setTimeout(()=>sendToMIT('REQUEST_KEY'),300);
 });
