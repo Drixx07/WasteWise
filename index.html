@@ -37,7 +37,6 @@ button,input,select{font-family:inherit}
 .hero:after{content:"";position:absolute;right:-35px;top:-35px;width:130px;height:130px;background:rgba(255,255,255,.16);border-radius:999px}
 .hero h1{font-family:'Nunito';font-size:27px;line-height:1.1;font-weight:900;margin-bottom:6px;position:relative;z-index:1}
 .hero p{font-size:14px;opacity:.92;line-height:1.45;position:relative;z-index:1}
-.grid{display:grid;gap:12px}
 .card{
   background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;
   box-shadow:0 6px 22px rgba(15,23,42,.06);margin-bottom:12px
@@ -67,8 +66,8 @@ button,input,select{font-family:inherit}
 .feature-icon{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
 .feature-card h3{font-family:'Nunito';font-size:16px;font-weight:900}
 .feature-card p{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
-.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.topic-card{border:1.5px solid var(--border);background:#fff;border-radius:18px;padding:14px;text-align:left}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.topic-card{border:1.5px solid var(--border);background:#fff;border-radius:18px;padding:14px;text-align:left;cursor:pointer}
 .topic-card.active{border-color:var(--green);background:var(--green-soft)}
 .topic-card .emoji{font-size:24px;margin-bottom:6px}
 .topic-card h3{font-family:'Nunito';font-size:15px;font-weight:900}
@@ -86,7 +85,7 @@ button,input,select{font-family:inherit}
 .q-card{border:1px solid var(--border);border-radius:17px;padding:13px;margin-bottom:11px;background:#fafafa}
 .q-title{font-weight:800;margin-bottom:9px;line-height:1.4}
 .option{
-  display:block;background:#fff;border:1.5px solid var(--border);padding:10px;border-radius:13px;margin:7px 0;font-size:14px
+  display:block;background:#fff;border:1.5px solid var(--border);padding:10px;border-radius:13px;margin:7px 0;font-size:14px;cursor:pointer
 }
 .option input{margin-right:8px}
 .correct{border-color:var(--green);background:var(--green-soft)}
@@ -111,8 +110,23 @@ button,input,select{font-family:inherit}
 .nav-item .nav-ico{font-size:21px}
 .nav-item.active{color:var(--green);background:linear-gradient(180deg,#fff,var(--green-soft))}
 .small-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
-.status{font-size:12px;margin-top:8px;color:var(--green-dark);font-weight:700}
-.hidden{display:none!important}
+.status{font-size:13px;margin-top:10px;font-weight:700;padding:10px;border-radius:12px;background:var(--green-soft);color:var(--green-dark);display:none}
+.status.error{background:var(--red-soft);color:var(--red)}
+.status.show{display:block}
+.key-indicator{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;
+  background:#f0fdf4;border:1.5px solid #bbf7d0;margin-top:10px;font-size:13px;font-weight:700
+}
+.key-indicator.no-key{background:#fff5f5;border-color:#fecaca;color:var(--red)}
+.key-indicator.has-key{color:var(--green-dark)}
+.dot{width:10px;height:10px;border-radius:999px;background:currentColor;flex-shrink:0}
+.loading-spinner{
+  display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-right:4px
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* MIT Bridge debug panel */
+.mit-debug{font-size:11px;color:#888;background:#f9fafb;border:1px dashed #e5e7eb;border-radius:12px;padding:10px;margin-top:8px;line-height:1.6}
 @media(min-width:720px){.screen{max-width:760px;margin:auto}.bottom-nav{max-width:760px;margin:auto;left:50%;transform:translateX(-50%);border-radius:22px 22px 0 0}.app-header{max-width:760px;margin:auto;left:50%;transform:translateX(-50%)}}
 </style>
 </head>
@@ -122,10 +136,22 @@ button,input,select{font-family:inherit}
   <button class="icon-btn" onclick="goSettings()">⚙️</button>
 </header>
 
+<!-- HOME -->
 <section id="screen-home" class="screen active">
   <div class="hero">
     <h1>Smart Waste Learning</h1>
     <p>Study quick lessons, take AI-generated quizzes, and learn how to classify trash properly.</p>
+  </div>
+
+  <div id="homeKeyWarning" style="display:none" class="card" style="border-color:#fecaca">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px">⚠️</span>
+      <div>
+        <div class="card-title" style="color:var(--red);font-size:15px">No API Key Saved</div>
+        <p class="sub">Go to Settings and save your OpenRouter API key to use AI features.</p>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="goSettings()">Go to Settings →</button>
   </div>
 
   <div class="feature-card" onclick="switchScreen('lesson')">
@@ -134,34 +160,61 @@ button,input,select{font-family:inherit}
   </div>
   <div class="feature-card" onclick="switchScreen('classify')">
     <div class="feature-icon" style="background:var(--blue-soft)">♻️</div>
-    <div><h3>Classification guide</h3><p>See examples, images, and disposal tips by waste category.</p></div>
+    <div><h3>Classification guide</h3><p>See examples and disposal tips by waste category.</p></div>
   </div>
 
   <div class="card">
     <div class="card-title">How to use</div>
-    <p class="sub">1. Open Settings and save your OpenRouter API key. 2. Read a lesson. 3. Choose the number of quiz items. 4. Submit answers to reveal score and correct answers.</p>
+    <p class="sub">1. Open Settings and save your OpenRouter API key.<br>2. Read a lesson.<br>3. Choose the number of quiz items.<br>4. Submit answers to reveal score and correct answers.</p>
   </div>
 </section>
 
+<!-- SETTINGS -->
 <section id="screen-settings" class="screen">
   <div class="hero">
     <h1>Settings</h1>
-    <p>Save your API key here. This simple card is MIT WebViewer-friendly.</p>
+    <p>Save your OpenRouter API key to enable AI quiz generation.</p>
   </div>
 
   <div class="card">
     <div class="card-title">🔑 OpenRouter API Key</div>
-    <p class="sub">Your key is hidden while typing. In MIT, the key is saved through TinyDB using WebViewString.</p>
-    <input id="apiKeyInput" class="input" type="password" placeholder="sk-or-v1-..." autocomplete="off">
-    <div class="actions">
-      <button class="btn btn-primary" onclick="saveKey()">Save Key</button>
-      <button class="btn btn-danger" onclick="clearKey()">Clear Key</button>
+    <p class="sub">Get your free key at <b>openrouter.ai</b>. Your key is stored in the app and never leaves your device.</p>
+
+    <div id="keyIndicator" class="key-indicator no-key">
+      <div class="dot"></div>
+      <span id="keyIndicatorText">No API key saved</span>
     </div>
-    <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="toggleKey()">Show / Hide Key</button>
+
+    <input id="apiKeyInput" class="input" type="password" placeholder="sk-or-v1-..." autocomplete="off" oninput="onKeyInput()">
+
+    <div class="actions">
+      <button class="btn btn-primary" id="saveBtn" onclick="saveKey()">💾 Save Key</button>
+      <button class="btn btn-danger" onclick="clearKey()">🗑️ Clear</button>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="toggleKey()">👁️ Show / Hide Key</button>
+
     <div id="keyStatus" class="status"></div>
+
+    <div class="mit-debug">
+      <b>MIT Bridge Status:</b><br>
+      AppInventor object: <span id="dbgAI">checking...</span><br>
+      Storage method: <span id="dbgStorage">checking...</span><br>
+      Key loaded: <span id="dbgKeyLoaded">no</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 MIT App Inventor Setup</div>
+    <p class="sub">In your MIT App Inventor project, you need this block setup:</p>
+    <div style="background:#f4f7fb;border-radius:12px;padding:12px;margin-top:8px;font-size:12px;line-height:1.8;font-family:monospace">
+      WebViewer1.WebViewString → TinyDB1.StoreValue (tag: "apikey")<br>
+      Screen1.Initialize → TinyDB1.GetValue (tag: "apikey") → WebViewer1.WebViewString<br>
+      WebViewer1.PageLoaded → evaluate JS: <b>loadKeyFromMIT(WebViewer1.WebViewString)</b>
+    </div>
   </div>
 </section>
 
+<!-- LESSON -->
 <section id="screen-lesson" class="screen">
   <div class="hero">
     <h1>Topic / Lesson</h1>
@@ -186,14 +239,15 @@ button,input,select{font-family:inherit}
       <option value="10">10 items</option>
     </select>
     <div class="actions">
-      <button class="btn btn-primary" onclick="generateQuiz()">Generate Quiz</button>
-      <button class="btn btn-secondary" onclick="openQuiz()">Open Quiz</button>
+      <button class="btn btn-primary" id="genBtn" onclick="generateQuiz()">⚡ Generate Quiz</button>
+      <button class="btn btn-secondary" onclick="openQuiz()">📋 Open Quiz</button>
     </div>
-    <button class="btn btn-danger" style="width:100%;margin-top:8px" onclick="clearQuiz()">Clear Previous Quiz</button>
+    <button class="btn btn-danger" style="width:100%;margin-top:8px" onclick="clearQuiz()">🗑️ Clear Quiz</button>
     <div id="quizStatus" class="small-note"></div>
   </div>
 </section>
 
+<!-- CLASSIFY -->
 <section id="screen-classify" class="screen">
   <div class="hero">
     <h1>Classification</h1>
@@ -202,6 +256,7 @@ button,input,select{font-family:inherit}
   <div id="classifyList"></div>
 </section>
 
+<!-- QUIZ SHEET -->
 <div id="quizOverlay" class="quiz-overlay" onclick="closeQuiz()"></div>
 <div id="quizSheet" class="quiz-sheet">
   <div class="sheet-handle"></div>
@@ -210,11 +265,11 @@ button,input,select{font-family:inherit}
       <div class="card-title" style="margin:0">AI Quiz</div>
       <div class="sub" id="quizTopicLabel">No quiz generated yet.</div>
     </div>
-    <button class="btn btn-danger" onclick="closeQuiz()">Close</button>
+    <button class="btn btn-danger" onclick="closeQuiz()">✕ Close</button>
   </div>
   <div id="scoreBox" class="score-box"></div>
   <div id="quizQuestions"></div>
-  <button id="submitQuizBtn" class="btn btn-primary" style="width:100%;margin-top:8px" onclick="submitQuiz()">Submit Answers</button>
+  <button id="submitQuizBtn" class="btn btn-primary" style="width:100%;margin-top:8px" onclick="submitQuiz()">✅ Submit Answers</button>
 </div>
 
 <nav class="bottom-nav">
@@ -224,19 +279,191 @@ button,input,select{font-family:inherit}
 </nav>
 
 <script>
-let apiKey = localStorage.getItem("openrouter_key") || "";
-let selectedTopic = null;
-let quizData = [];
-let answersShown = false;
+/* ============================================================
+   MIT APP INVENTOR BRIDGE
+   
+   How this works:
+   1. MIT side: When Screen1 initializes, get TinyDB value and
+      set WebViewer1.WebViewString to the stored key.
+   2. MIT side: On WebViewer.PageLoaded, call JS:
+         window.loadKeyFromMIT(WebViewer1.WebViewString)
+   3. JS side (below): When saving, we set AppInventor.setWebViewString()
+      which MIT reads via WebViewer.WebViewStringChanged event,
+      then MIT stores it in TinyDB.
+   
+   FALLBACK: Also uses localStorage for browser/Companion testing.
+   ============================================================ */
 
-const topics = [
-  {id:"segregation", emoji:"🗂️", title:"Waste Segregation", lesson:`<p>Waste segregation means separating trash based on type before disposal. It helps reduce pollution and makes recycling easier.</p><ul><li>Separate biodegradable, recyclable, residual, and hazardous waste.</li><li>Keep recyclables clean and dry.</li><li>Never mix hazardous waste with regular trash.</li></ul>`},
-  {id:"recycling", emoji:"♻️", title:"Recycling Basics", lesson:`<p>Recycling turns used materials into new products. It saves resources and reduces landfill waste.</p><ul><li>Rinse bottles and cans before recycling.</li><li>Flatten cardboard to save space.</li><li>Do not recycle dirty or greasy containers.</li></ul>`},
-  {id:"hazardous", emoji:"⚠️", title:"Hazardous Waste", lesson:`<p>Hazardous waste can harm people, animals, and the environment. It needs special handling.</p><ul><li>Batteries, bulbs, chemicals, and e-waste are hazardous.</li><li>Do not throw them with normal garbage.</li><li>Bring them to barangay or LGU collection points when available.</li></ul>`},
-  {id:"composting", emoji:"🌱", title:"Composting", lesson:`<p>Composting turns organic waste into useful soil material. It reduces food waste sent to landfills.</p><ul><li>Fruit peels, vegetable scraps, and leaves can be composted.</li><li>Avoid meat, oil, and dairy in simple home composting.</li><li>Keep compost slightly moist and mixed.</li></ul>`}
+var apiKey = "";
+var selectedTopic = null;
+var quizData = [];
+
+// ── Storage helpers ──────────────────────────────────────────
+
+function storageGet(k) {
+  try { return localStorage.getItem(k) || ""; } catch(e) { return ""; }
+}
+function storageSet(k, v) {
+  try { localStorage.setItem(k, v); } catch(e) {}
+}
+function storageRemove(k) {
+  try { localStorage.removeItem(k); } catch(e) {}
+}
+
+// Detect MIT environment
+function isMIT() {
+  return typeof window.AppInventor !== "undefined";
+}
+
+// Send string to MIT (triggers WebViewer.WebViewStringChanged)
+function mitSend(msg) {
+  try {
+    if (isMIT()) {
+      window.AppInventor.setWebViewString(msg);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+// Called by MIT AppInventor on PageLoaded or WebViewStringChanged
+// MIT block: call WebViewer1.RunJavaScript("loadKeyFromMIT('" + TinyDB1.GetValue("apikey","") + "')")
+window.loadKeyFromMIT = function(val) {
+  if (!val || val === "REQUEST_KEY") return;
+  // Strip any prefix MIT might send
+  var clean = val.replace(/^KEY:/i, "").replace(/^SAVE_KEY:/i, "").trim();
+  if (clean && clean.startsWith("sk-")) {
+    apiKey = clean;
+    storageSet("ww_apikey", clean);
+    updateKeyUI(true);
+    document.getElementById("dbgKeyLoaded").textContent = "yes (from MIT)";
+  }
+};
+
+// Legacy alias (in case old MIT blocks call this)
+window.loadApiKeyFromMIT = window.loadKeyFromMIT;
+
+// ── Key management ───────────────────────────────────────────
+
+function saveKey() {
+  var val = (document.getElementById("apiKeyInput").value || "").trim();
+  if (!val) { showStatus("Please enter an API key.", true); return; }
+  if (!val.startsWith("sk-")) { showStatus("Key should start with sk-. Double check and try again.", true); return; }
+
+  apiKey = val;
+  storageSet("ww_apikey", val);
+
+  // MIT: send key so MIT can store in TinyDB
+  // MIT should listen to WebViewStringChanged and store the key
+  mitSend("KEY:" + val);
+
+  // Also try direct AppInventor object (Companion)
+  try {
+    if (isMIT()) {
+      window.AppInventor.setWebViewString("KEY:" + val);
+    }
+  } catch(e) {}
+
+  updateKeyUI(true);
+  showStatus("✅ API key saved successfully!", false);
+  document.getElementById("dbgKeyLoaded").textContent = "yes (saved now)";
+
+  setTimeout(function() { switchScreen("lesson"); }, 1200);
+}
+
+function clearKey() {
+  apiKey = "";
+  storageRemove("ww_apikey");
+  document.getElementById("apiKeyInput").value = "";
+  mitSend("CLEAR_KEY");
+  updateKeyUI(false);
+  showStatus("API key cleared.", false);
+  document.getElementById("dbgKeyLoaded").textContent = "no";
+}
+
+function onKeyInput() {
+  var val = document.getElementById("apiKeyInput").value.trim();
+  var btn = document.getElementById("saveBtn");
+  btn.disabled = val.length < 10;
+}
+
+function toggleKey() {
+  var input = document.getElementById("apiKeyInput");
+  input.type = input.type === "password" ? "text" : "password";
+}
+
+function updateKeyUI(hasKey) {
+  var ind = document.getElementById("keyIndicator");
+  var txt = document.getElementById("keyIndicatorText");
+  var warn = document.getElementById("homeKeyWarning");
+  if (hasKey) {
+    ind.className = "key-indicator has-key";
+    txt.textContent = "API key saved ✓";
+    if (warn) warn.style.display = "none";
+  } else {
+    ind.className = "key-indicator no-key";
+    txt.textContent = "No API key saved";
+    if (warn) warn.style.display = "block";
+  }
+}
+
+function showStatus(text, isError) {
+  var el = document.getElementById("keyStatus");
+  el.textContent = text;
+  el.className = "status show" + (isError ? " error" : "");
+  setTimeout(function() { el.classList.remove("show"); }, 3500);
+}
+
+function goSettings() { switchScreen("settings"); }
+
+// ── Screen routing ───────────────────────────────────────────
+
+function switchScreen(name) {
+  document.querySelectorAll(".screen").forEach(function(s) { s.classList.remove("active"); });
+  var screen = document.getElementById("screen-" + name);
+  if (screen) screen.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(function(n) { n.classList.remove("active"); });
+  var nav = document.getElementById("nav-" + name);
+  if (nav) nav.classList.add("active");
+  // Refresh home warning
+  if (name === "home") updateKeyUI(!!apiKey);
+}
+
+// ── Topics & lessons ─────────────────────────────────────────
+
+var topics = [
+  {id:"segregation", emoji:"🗂️", title:"Waste Segregation", lesson:"<p>Waste segregation means separating trash based on type before disposal. It helps reduce pollution and makes recycling easier.</p><ul><li>Separate biodegradable, recyclable, residual, and hazardous waste.</li><li>Keep recyclables clean and dry.</li><li>Never mix hazardous waste with regular trash.</li></ul>"},
+  {id:"recycling", emoji:"♻️", title:"Recycling Basics", lesson:"<p>Recycling turns used materials into new products. It saves resources and reduces landfill waste.</p><ul><li>Rinse bottles and cans before recycling.</li><li>Flatten cardboard to save space.</li><li>Do not recycle dirty or greasy containers.</li></ul>"},
+  {id:"hazardous", emoji:"⚠️", title:"Hazardous Waste", lesson:"<p>Hazardous waste can harm people, animals, and the environment. It needs special handling.</p><ul><li>Batteries, bulbs, chemicals, and e-waste are hazardous.</li><li>Do not throw them with normal garbage.</li><li>Bring them to barangay or LGU collection points when available.</li></ul>"},
+  {id:"composting", emoji:"🌱", title:"Composting", lesson:"<p>Composting turns organic waste into useful soil material. It reduces food waste sent to landfills.</p><ul><li>Fruit peels, vegetable scraps, and leaves can be composted.</li><li>Avoid meat, oil, and dairy in simple home composting.</li><li>Keep compost slightly moist and mixed.</li></ul>"}
 ];
 
-const classifications = [
+function renderTopics() {
+  document.getElementById("topicGrid").innerHTML = topics.map(function(t) {
+    return '<button class="topic-card" id="topic-' + t.id + '" onclick="selectTopic(\'' + t.id + '\')">' +
+      '<div class="emoji">' + t.emoji + '</div>' +
+      '<h3>' + t.title + '</h3>' +
+      '<p class="sub">Tap to study</p>' +
+      '</button>';
+  }).join("");
+}
+
+function selectTopic(id) {
+  selectedTopic = null;
+  for (var i = 0; i < topics.length; i++) {
+    if (topics[i].id === id) { selectedTopic = topics[i]; break; }
+  }
+  if (!selectedTopic) return;
+  document.querySelectorAll(".topic-card").forEach(function(c) { c.classList.remove("active"); });
+  document.getElementById("topic-" + id).classList.add("active");
+  document.getElementById("lessonTitle").textContent = selectedTopic.emoji + " " + selectedTopic.title;
+  document.getElementById("lessonContent").innerHTML = selectedTopic.lesson;
+  document.getElementById("quizStatus").textContent = "Ready to generate a quiz about " + selectedTopic.title + ".";
+}
+
+// ── Classifications ──────────────────────────────────────────
+
+var classifications = [
   {id:"bio", emoji:"🍃", name:"Biodegradable", imgBg:"var(--green-soft)", badge:"Green Bin", examples:["Fruit peels","Vegetable scraps","Leaves","Food scraps"], tip:"Compost when possible. Keep wet food waste separate from recyclables."},
   {id:"rec", emoji:"♻️", name:"Recyclable", imgBg:"#e0f2fe", badge:"Recycle Bin", examples:["Plastic bottles","Aluminum cans","Glass jars","Clean cardboard"], tip:"Rinse and dry items first. Flatten cardboard and do not mix with food waste."},
   {id:"nonbio", emoji:"🧱", name:"Non-Biodegradable", imgBg:"var(--blue-soft)", badge:"Blue Bin", examples:["Styrofoam","Plastic wrappers","Rubber","Synthetic cloth"], tip:"Reuse when possible. If not recyclable, dispose as residual waste."},
@@ -244,237 +471,235 @@ const classifications = [
   {id:"haz", emoji:"⚠️", name:"Hazardous Waste", imgBg:"var(--red-soft)", badge:"Special Disposal", examples:["Batteries","Light bulbs","Chemicals","E-waste"], tip:"Never mix with regular trash. Bring to special collection or LGU drop-off points."}
 ];
 
-function safeMITSend(message){
-  try{ if(window.AppInventor){ window.AppInventor.setWebViewString(message); return true; } }catch(e){}
-  return false;
+function renderClassifications() {
+  document.getElementById("classifyList").innerHTML = classifications.map(function(c) {
+    return '<div class="class-card">' +
+      '<div class="class-head">' +
+        '<div class="class-img" style="background:' + c.imgBg + '">' + c.emoji + '</div>' +
+        '<div>' +
+          '<h3 style="font-family:Nunito;font-size:18px;font-weight:900">' + c.name + '</h3>' +
+          '<span class="badge" style="background:' + c.imgBg + ';color:var(--text)">' + c.badge + '</span>' +
+          '<p class="sub" style="margin-top:6px">Tap below to view examples and disposal tip.</p>' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn btn-secondary" style="width:100%;margin-top:12px" onclick="toggleExamples(\'' + c.id + '\')">View Examples + Tip</button>' +
+      '<div class="examples" id="examples-' + c.id + '">' +
+        '<b>Examples:</b><br>' + c.examples.map(function(e) { return "• " + e; }).join("<br>") +
+        '<br><br><b>Disposal Tip:</b><br>' + c.tip +
+      '</div>' +
+    '</div>';
+  }).join("");
 }
 
-function saveKey(){
-  const val = document.getElementById("apiKeyInput").value.trim();
-  if(!val){ setStatus("Please enter an API key.", true); return; }
-  apiKey = val;
-  localStorage.setItem("openrouter_key", val);
-  safeMITSend("SAVE_KEY:" + val);
-  setStatus("API key saved.");
+function toggleExamples(id) {
+  document.getElementById("examples-" + id).classList.toggle("show");
 }
 
-function clearKey(){
-  apiKey = "";
-  localStorage.removeItem("openrouter_key");
-  document.getElementById("apiKeyInput").value = "";
-  safeMITSend("CLEAR_KEY");
-  setStatus("API key cleared.");
-}
+// ── AI Quiz ──────────────────────────────────────────────────
 
-function loadApiKeyFromMIT(key){
-  if(!key) return;
-  apiKey = key;
-  localStorage.setItem("openrouter_key", key);
-  const input = document.getElementById("apiKeyInput");
-  if(input) input.value = key;
-  setStatus("Saved API key loaded.");
-}
+async function generateQuiz() {
+  if (!selectedTopic) {
+    document.getElementById("quizStatus").textContent = "⚠️ Choose a lesson topic first.";
+    return;
+  }
+  if (!apiKey) {
+    document.getElementById("quizStatus").textContent = "⚠️ No API key saved. Go to Settings first.";
+    switchScreen("settings");
+    return;
+  }
 
-function setStatus(text, error=false){
-  const el = document.getElementById("keyStatus");
-  if(el){ el.textContent = text; el.style.color = error ? "var(--red)" : "var(--green-dark)"; }
-}
-
-function toggleKey(){
-  const input = document.getElementById("apiKeyInput");
-  input.type = input.type === "password" ? "text" : "password";
-}
-
-function goSettings(){ switchScreen("settings"); }
-
-function switchScreen(name){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  const screen = document.getElementById("screen-"+name);
-  if(screen) screen.classList.add("active");
-  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-  const nav = document.getElementById("nav-"+name);
-  if(nav) nav.classList.add("active");
-}
-
-function renderTopics(){
-  document.getElementById("topicGrid").innerHTML = topics.map(t=>`
-    <button class="topic-card" id="topic-${t.id}" onclick="selectTopic('${t.id}')">
-      <div class="emoji">${t.emoji}</div>
-      <h3>${t.title}</h3>
-      <p class="sub">Tap to study</p>
-    </button>
-  `).join("");
-}
-
-function selectTopic(id){
-  selectedTopic = topics.find(t=>t.id===id);
-  document.querySelectorAll(".topic-card").forEach(c=>c.classList.remove("active"));
-  document.getElementById("topic-"+id).classList.add("active");
-  document.getElementById("lessonTitle").textContent = selectedTopic.emoji + " " + selectedTopic.title;
-  document.getElementById("lessonContent").innerHTML = selectedTopic.lesson;
-  document.getElementById("quizStatus").textContent = "Ready to generate a quiz about " + selectedTopic.title + ".";
-}
-
-function renderClassifications(){
-  document.getElementById("classifyList").innerHTML = classifications.map(c=>`
-    <div class="class-card">
-      <div class="class-head">
-        <div class="class-img" style="background:${c.imgBg}">${c.emoji}</div>
-        <div>
-          <h3 style="font-family:Nunito;font-size:18px;font-weight:900">${c.name}</h3>
-          <span class="badge" style="background:${c.imgBg};color:var(--text)">${c.badge}</span>
-          <p class="sub" style="margin-top:6px">Tap below to view examples and disposal tip.</p>
-        </div>
-      </div>
-      <button class="btn btn-secondary" style="width:100%;margin-top:12px" onclick="toggleExamples('${c.id}')">View Examples + Tip</button>
-      <div class="examples" id="examples-${c.id}">
-        <b>Examples:</b><br>${c.examples.map(e=>"• "+e).join("<br>")}
-        <br><br><b>Disposal Tip:</b><br>${c.tip}
-      </div>
-    </div>
-  `).join("");
-}
-
-function toggleExamples(id){
-  document.getElementById("examples-"+id).classList.toggle("show");
-}
-
-async function generateQuiz(){
-  if(!selectedTopic){ document.getElementById("quizStatus").textContent="Choose a lesson topic first."; return; }
-  if(!apiKey){ document.getElementById("quizStatus").textContent="Please save your API key first in Settings."; switchScreen("settings"); return; }
-  const count = Number(document.getElementById("quizCount").value || 5);
-  const status = document.getElementById("quizStatus");
-  status.textContent = "Generating quiz...";
+  var count = Number(document.getElementById("quizCount").value || 5);
+  var status = document.getElementById("quizStatus");
+  var genBtn = document.getElementById("genBtn");
+  status.textContent = "⏳ Generating quiz...";
+  genBtn.disabled = true;
+  genBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
   quizData = [];
-  answersShown = false;
 
-  const prompt = `Create exactly ${count} multiple-choice quiz questions about ${selectedTopic.title} for Filipino students learning waste management.
-Return ONLY valid JSON, no markdown, no explanation.
-Format:
-[
- {"question":"...","options":["A","B","C","D"],"answerIndex":0,"explanation":"short explanation"}
-]`;
+  var prompt = "Create exactly " + count + " multiple-choice quiz questions about " + selectedTopic.title + " for Filipino students learning waste management.\nReturn ONLY valid JSON array, no markdown, no explanation, no code fences.\nFormat:\n[{\"question\":\"...\",\"options\":[\"A\",\"B\",\"C\",\"D\"],\"answerIndex\":0,\"explanation\":\"short explanation\"}]";
 
-  const models = [
+  var models = [
     "google/gemini-2.0-flash-001",
     "mistralai/mistral-small-3.1-24b-instruct:free",
-    "meta-llama/llama-4-maverick:free"
+    "meta-llama/llama-4-maverick:free",
+    "openai/gpt-4o-mini"
   ];
 
-  let lastErr = "";
-  for(const model of models){
-    try{
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions",{
-        method:"POST",
-        headers:{
-          "Authorization":"Bearer "+apiKey,
-          "Content-Type":"application/json",
-          "HTTP-Referer": location.href,
-          "X-Title":"WasteWise"
+  var lastErr = "";
+  for (var mi = 0; mi < models.length; mi++) {
+    var model = models[mi];
+    try {
+      var res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + apiKey,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://wastewise.app",
+          "X-Title": "WasteWise"
         },
-        body:JSON.stringify({
-          model,
-          messages:[{role:"user",content:prompt}],
-          max_tokens:1600
+        body: JSON.stringify({
+          model: model,
+          messages: [{role: "user", content: prompt}],
+          max_tokens: 1800,
+          temperature: 0.7
         })
       });
-      const data = await res.json();
-      if(data.error) throw new Error(data.error.message || "API error");
-      const text = data.choices?.[0]?.message?.content || "";
-      const clean = text.replace(/```json|```/g,"").trim();
+
+      var data = await res.json();
+
+      if (data.error) {
+        lastErr = data.error.message || JSON.stringify(data.error);
+        // If 401 auth error, stop trying models and tell user
+        if (data.error.code === 401 || lastErr.toLowerCase().includes("auth") || lastErr.toLowerCase().includes("key")) {
+          status.textContent = "❌ Invalid API key. Please check your key in Settings.";
+          genBtn.disabled = false;
+          genBtn.innerHTML = "⚡ Generate Quiz";
+          return;
+        }
+        continue;
+      }
+
+      var text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
+      // Strip code fences if model wraps in them
+      var clean = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+      // Find JSON array
+      var startIdx = clean.indexOf("[");
+      var endIdx = clean.lastIndexOf("]");
+      if (startIdx !== -1 && endIdx !== -1) {
+        clean = clean.substring(startIdx, endIdx + 1);
+      }
       quizData = JSON.parse(clean);
-      if(!Array.isArray(quizData) || !quizData.length) throw new Error("Invalid quiz JSON");
-      status.textContent = "Quiz ready. Open the quiz popup.";
+      if (!Array.isArray(quizData) || !quizData.length) throw new Error("Empty or invalid quiz JSON");
+
+      status.textContent = "✅ Quiz ready! " + quizData.length + " questions generated.";
+      genBtn.disabled = false;
+      genBtn.innerHTML = "⚡ Generate Quiz";
       renderQuiz();
       openQuiz();
       return;
-    }catch(e){
+
+    } catch(e) {
       lastErr = e.message;
     }
   }
-  status.textContent = "Could not generate quiz: " + lastErr;
+
+  status.textContent = "❌ Could not generate quiz: " + lastErr;
+  genBtn.disabled = false;
+  genBtn.innerHTML = "⚡ Generate Quiz";
 }
 
-function renderQuiz(){
-  const box = document.getElementById("quizQuestions");
-  document.getElementById("quizTopicLabel").textContent = selectedTopic ? selectedTopic.title : "WasteWise Quiz";
+function renderQuiz() {
+  var box = document.getElementById("quizQuestions");
+  document.getElementById("quizTopicLabel").textContent = selectedTopic ? selectedTopic.emoji + " " + selectedTopic.title : "WasteWise Quiz";
   document.getElementById("scoreBox").classList.remove("show");
   document.getElementById("scoreBox").innerHTML = "";
   document.getElementById("quizSheet").classList.remove("answers-shown");
   document.getElementById("submitQuizBtn").disabled = false;
+  document.getElementById("submitQuizBtn").textContent = "✅ Submit Answers";
 
-  if(!quizData.length){
-    box.innerHTML = `<div class="card"><p class="sub">No quiz generated yet.</p></div>`;
+  if (!quizData.length) {
+    box.innerHTML = '<div class="card"><p class="sub">No quiz generated yet. Go to Lesson tab and generate one.</p></div>';
     return;
   }
 
-  box.innerHTML = quizData.map((q,qi)=>`
-    <div class="q-card" id="q-${qi}">
-      <div class="q-title">${qi+1}. ${escapeHtml(q.question)}</div>
-      ${(q.options||[]).map((op,oi)=>`
-        <label class="option" id="q-${qi}-op-${oi}">
-          <input type="radio" name="q-${qi}" value="${oi}">
-          ${escapeHtml(op)}
-        </label>
-      `).join("")}
-      <div class="answer-note" id="note-${qi}">
-        <b>Answer:</b> ${escapeHtml((q.options||[])[q.answerIndex] || "")}<br>
-        <b>Why:</b> ${escapeHtml(q.explanation || "")}
-      </div>
-    </div>
-  `).join("");
+  box.innerHTML = quizData.map(function(q, qi) {
+    return '<div class="q-card" id="q-' + qi + '">' +
+      '<div class="q-title">' + (qi+1) + '. ' + escapeHtml(q.question) + '</div>' +
+      (q.options || []).map(function(op, oi) {
+        return '<label class="option" id="q-' + qi + '-op-' + oi + '">' +
+          '<input type="radio" name="q-' + qi + '" value="' + oi + '"> ' +
+          escapeHtml(op) +
+          '</label>';
+      }).join("") +
+      '<div class="answer-note" id="note-' + qi + '">' +
+        '<b>✅ Answer:</b> ' + escapeHtml((q.options || [])[q.answerIndex] || "") + '<br>' +
+        '<b>💡 Why:</b> ' + escapeHtml(q.explanation || "") +
+      '</div>' +
+    '</div>';
+  }).join("");
 }
 
-function submitQuiz(){
-  if(!quizData.length) return;
-  let score = 0;
-  quizData.forEach((q,qi)=>{
-    const selected = document.querySelector(`input[name="q-${qi}"]:checked`);
-    const chosen = selected ? Number(selected.value) : -1;
-    if(chosen === q.answerIndex) score++;
-    (q.options||[]).forEach((_,oi)=>{
-      const opt = document.getElementById(`q-${qi}-op-${oi}`);
-      if(!opt) return;
-      if(oi === q.answerIndex) opt.classList.add("correct");
-      if(oi === chosen && chosen !== q.answerIndex) opt.classList.add("wrong");
+function submitQuiz() {
+  if (!quizData.length) return;
+  var score = 0;
+  quizData.forEach(function(q, qi) {
+    var selected = document.querySelector('input[name="q-' + qi + '"]:checked');
+    var chosen = selected ? Number(selected.value) : -1;
+    if (chosen === q.answerIndex) score++;
+    (q.options || []).forEach(function(_, oi) {
+      var opt = document.getElementById("q-" + qi + "-op-" + oi);
+      if (!opt) return;
+      if (oi === q.answerIndex) opt.classList.add("correct");
+      else if (oi === chosen) opt.classList.add("wrong");
     });
   });
-  const scoreBox = document.getElementById("scoreBox");
+  var pct = Math.round(score / quizData.length * 100);
+  var scoreBox = document.getElementById("scoreBox");
+  var emoji = pct >= 80 ? "🎉" : pct >= 50 ? "👍" : "📚";
   scoreBox.classList.add("show");
-  scoreBox.innerHTML = `<b>Your Score:</b> ${score} / ${quizData.length}<br><span class="sub">Correct answers and explanations are now visible.</span>`;
+  scoreBox.innerHTML = emoji + " <b>Your Score: " + score + " / " + quizData.length + " (" + pct + "%)</b><br><span class='sub'>Correct answers and explanations are now visible below.</span>";
   document.getElementById("quizSheet").classList.add("answers-shown");
   document.getElementById("submitQuizBtn").disabled = true;
+  document.getElementById("submitQuizBtn").textContent = "Submitted ✓";
+  scoreBox.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 
-function openQuiz(){
+function openQuiz() {
   document.getElementById("quizOverlay").classList.add("open");
   document.getElementById("quizSheet").classList.add("open");
-  if(!quizData.length) renderQuiz();
+  if (!quizData.length) renderQuiz();
 }
 
-function closeQuiz(){
+function closeQuiz() {
   document.getElementById("quizOverlay").classList.remove("open");
   document.getElementById("quizSheet").classList.remove("open");
 }
 
-function clearQuiz(){
+function clearQuiz() {
   quizData = [];
-  answersShown = false;
   document.getElementById("quizStatus").textContent = "Previous quiz cleared.";
   renderQuiz();
   closeQuiz();
 }
 
-function escapeHtml(str){
-  return String(str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function escapeHtml(str) {
+  return String(str == null ? "" : str).replace(/[&<>"']/g, function(m) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+  });
 }
 
-window.addEventListener("load",()=>{
+// ── Init ─────────────────────────────────────────────────────
+
+window.addEventListener("load", function() {
   renderTopics();
   renderClassifications();
   renderQuiz();
-  if(apiKey) document.getElementById("apiKeyInput").value = apiKey;
-  safeMITSend("REQUEST_KEY");
+
+  // Debug panel
+  var dbgAI = document.getElementById("dbgAI");
+  var dbgStorage = document.getElementById("dbgStorage");
+  if (isMIT()) {
+    dbgAI.textContent = "✅ Found";
+    dbgStorage.textContent = "MIT TinyDB + localStorage fallback";
+  } else {
+    dbgAI.textContent = "❌ Not found (browser/Companion)";
+    dbgStorage.textContent = "localStorage only";
+  }
+
+  // Load key from localStorage first (works in browser & Companion)
+  var stored = storageGet("ww_apikey");
+  if (stored && stored.startsWith("sk-")) {
+    apiKey = stored;
+    document.getElementById("apiKeyInput").value = stored;
+    updateKeyUI(true);
+    document.getElementById("dbgKeyLoaded").textContent = "yes (localStorage)";
+  } else {
+    updateKeyUI(false);
+  }
+
+  // Request key from MIT (if in MIT environment)
+  // MIT should respond by calling: window.loadKeyFromMIT(storedKey)
+  mitSend("REQUEST_KEY");
 });
 </script>
 </body>
