@@ -3,137 +3,259 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>WasteWise – Learn, Classify, Quiz</title>
+<title>WasteWise – AI Waste Learning App</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --green:#2e9e60;--green-dark:#1e7a47;--green-soft:#e8f5ee;
-  --blue:#3b5bdb;--blue-soft:#eef2ff;--orange:#f76707;--orange-soft:#fff4e6;
-  --red:#e03131;--red-soft:#fff5f5;--yellow:#e67700;--yellow-soft:#fff9db;
-  --purple:#7048e8;--purple-soft:#f3f0ff;--bg:#f4f6fb;--card:#fff;
-  --text:#152033;--muted:#6b7280;--border:#e5e7eb;--nav-h:76px;
+  --green:#2e9e60;--green-dark:#1e7a47;--green-light:#e8f5ee;
+  --blue:#3b5bdb;--blue-light:#eef2ff;
+  --orange:#f76707;--orange-light:#fff4e6;
+  --red:#e03131;--red-light:#fff5f5;
+  --yellow:#e67700;--yellow-light:#fff9db;
+  --purple:#7048e8;--purple-light:#f3f0ff;
+  --bg:#f4f6fb;--card:#ffffff;--text:#1a1a2e;--sub:#6c757d;--border:#e9ecef;
+  --header-h:60px;--nav-h:70px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:calc(var(--nav-h) + 16px);overflow-x:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:var(--nav-h)}
 button,input,select,textarea{font-family:inherit}
-.app{max-width:560px;margin:0 auto;min-height:100vh;background:var(--bg)}
-.screen{display:none;min-height:100vh}.screen.active{display:block}
-.hero{padding:26px 18px 28px;color:#fff;background:linear-gradient(135deg,var(--green-dark),var(--green),#4ade80);border-radius:0 0 28px 28px;box-shadow:0 10px 28px rgba(46,158,96,.25)}
-.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.logo{font-family:'Nunito',sans-serif;font-size:23px;font-weight:900;letter-spacing:-.5px}.logo span{color:#d9ffe8}.pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800}.hero h1{font-family:'Nunito',sans-serif;font-size:30px;line-height:1.08;margin-bottom:8px;font-weight:900}.hero p{font-size:14px;opacity:.92;line-height:1.55}.content{padding:18px}.section-title{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900;margin:4px 0 12px}.grid{display:grid;grid-template-columns:1fr;gap:12px}.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 5px 18px rgba(0,0,0,.055)}.feature-card{display:flex;gap:14px;align-items:center;cursor:pointer}.feature-icon{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;font-size:25px;flex-shrink:0}.feature-card h3{font-family:'Nunito',sans-serif;font-weight:900;font-size:16px}.feature-card p{color:var(--muted);font-size:13px;line-height:1.4;margin-top:2px}.mini-stat{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}.stat{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:12px}.stat b{font-size:20px}.stat span{display:block;font-size:12px;opacity:.9;margin-top:2px}.bottom-nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:560px;height:var(--nav-h);background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr);box-shadow:0 -8px 26px rgba(0,0,0,.08);z-index:50}.nav-item{border:0;background:#fff;color:#8a94a6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;cursor:pointer}.nav-item .ico{font-size:22px}.nav-item.active{color:var(--green);background:linear-gradient(180deg,#f4fff8,#fff)}.nav-item.active .ico{filter:drop-shadow(0 4px 8px rgba(46,158,96,.22))}.topic-list{display:grid;gap:12px}.topic-card{cursor:pointer}.topic-head{display:flex;align-items:center;gap:12px}.topic-emoji{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:25px;background:var(--green-soft)}.topic-card h3{font-family:'Nunito',sans-serif;font-size:17px;font-weight:900}.topic-card p,.lesson-box p{font-size:13.5px;color:var(--muted);line-height:1.55;margin-top:5px}.lesson-box{display:none;margin-top:12px;background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:14px}.lesson-box.open{display:block}.lesson-box h4{font-family:'Nunito',sans-serif;font-size:15px;margin:10px 0 6px}.lesson-box ul{padding-left:20px;margin-top:8px}.lesson-box li{font-size:13.5px;line-height:1.55;margin-bottom:5px;color:#374151}.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.btn{border:0;border-radius:14px;padding:11px 14px;font-weight:900;cursor:pointer}.btn-primary{background:var(--green);color:#fff}.btn-secondary{background:var(--green-soft);color:var(--green-dark);border:1px solid #bce7ce}.btn-muted{background:#f3f4f6;color:#374151}.quiz-panel{margin-top:16px}.quiz-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.quiz-controls select{width:100%;border:1px solid var(--border);border-radius:14px;padding:11px;background:#fff;font-weight:800;color:#374151}.question-card{display:none;margin-top:14px}.question-card.active{display:block}.question-num{font-size:12px;font-weight:900;color:var(--green);letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px}.question-text{font-family:'Nunito',sans-serif;font-size:20px;font-weight:900;line-height:1.25;margin-bottom:12px}.choice{display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--border);border-radius:15px;padding:13px;margin:8px 0;font-weight:800;color:#374151;cursor:pointer}.choice.selected{border-color:var(--green);background:var(--green-soft);color:var(--green-dark)}.quiz-result{display:none;margin-top:14px}.quiz-result.open{display:block}.answer-review{margin-top:12px;background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:12px}.answer-review h4{font-family:'Nunito',sans-serif;font-weight:900;margin-bottom:6px}.answer-review p{font-size:13.5px;line-height:1.5;color:#374151}.correct{color:var(--green);font-weight:900}.wrong{color:var(--red);font-weight:900}.class-filter{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px}.chip{white-space:nowrap;border:1.5px solid var(--border);background:#fff;color:#6b7280;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;cursor:pointer}.chip.active{background:var(--green);border-color:var(--green);color:#fff}.waste-grid{display:grid;gap:12px}.waste-card{overflow:hidden;padding:0}.waste-img{height:118px;background:linear-gradient(135deg,#ecfdf5,#dbeafe);display:flex;align-items:center;justify-content:center;font-size:52px}.waste-body{padding:15px}.waste-top{display:flex;align-items:center;gap:10px}.waste-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:23px;flex-shrink:0}.waste-card h3{font-family:'Nunito',sans-serif;font-size:18px;font-weight:900}.badge{display:inline-block;margin-top:6px;font-size:10px;font-weight:900;letter-spacing:.9px;text-transform:uppercase;padding:4px 9px;border-radius:999px}.waste-card p{font-size:13.5px;color:#4b5563;line-height:1.55;margin-top:10px}.example-box{display:none;margin-top:12px;background:#f8fafc;border:1px solid var(--border);border-radius:15px;padding:12px}.example-box.open{display:block}.example-box h4{font-family:'Nunito',sans-serif;font-size:14px;margin-bottom:7px}.example-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}.tag{background:#fff;border:1px solid var(--border);border-radius:999px;padding:6px 9px;font-size:12px;font-weight:800}.tip-box{background:var(--yellow-soft);border:1px solid #fde68a;border-radius:13px;padding:10px;font-size:13px;line-height:1.45;color:#744800}.small-note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:8px}.settings-btn{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:8px 10px;font-weight:900}.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}.modal-overlay.open{display:flex}.modal{background:#fff;width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:22px}.modal h2{font-family:'Nunito',sans-serif;font-weight:900;margin-bottom:8px}.modal p{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px}.modal input{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:13px;margin-bottom:10px}.ai-status{display:none;margin-top:12px;font-size:13px;color:var(--muted)}.ai-status.open{display:block}.loading{display:inline-block;width:16px;height:16px;border:3px solid #d1d5db;border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:7px}@keyframes spin{to{transform:rotate(360deg)}}
-@media(min-width:520px){.hero h1{font-size:34px}.quiz-controls{grid-template-columns:1fr 1fr 1fr}.waste-grid{grid-template-columns:1fr 1fr}.waste-img{height:96px}}
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:50;background:linear-gradient(135deg,var(--green-dark),var(--green),#4ade80);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+.logo{font-family:'Nunito',sans-serif;font-weight:900;font-size:21px}.logo span{color:#d4f7e7}
+.icon-btn{border:none;background:rgba(255,255,255,.16);color:#fff;border-radius:12px;padding:8px 10px;font-weight:800;cursor:pointer}
+.screen{display:none;min-height:100vh;padding:calc(var(--header-h) + 14px) 0 18px}.screen.active{display:block}
+.hero{margin:0 16px 16px;border-radius:22px;padding:22px 18px;color:#fff;background:linear-gradient(135deg,var(--green-dark),var(--green),#4ade80);box-shadow:0 8px 24px rgba(46,158,96,.25)}
+.hero h1{font-family:'Nunito',sans-serif;font-size:28px;line-height:1.1;font-weight:900;margin-bottom:6px}.hero p{font-size:14px;opacity:.92;line-height:1.5}.hero .mini{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;opacity:.85;margin-bottom:8px}
+.content{padding:0 16px}.section-label{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--sub);margin:16px 0 10px}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;display:flex;gap:14px;align-items:center;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.05);cursor:pointer}.feature-card:active{transform:scale(.985)}.feature-icon{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}.feature-card h3{font-family:'Nunito';font-size:16px;font-weight:900}.feature-card p{font-size:12.5px;color:var(--sub);margin-top:3px}.chev{margin-left:auto;color:var(--sub);font-size:22px}
+.api-card{display:none}.api-card.open{display:block}.input{width:100%;padding:13px 14px;border:2px solid var(--border);border-radius:14px;font-size:14px;outline:none;background:#fff}.input:focus{border-color:var(--green)}.btn{border:none;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer;background:var(--green);color:#fff;display:inline-flex;justify-content:center;align-items:center;gap:7px}.btn:active{background:var(--green-dark);transform:scale(.99)}.btn.secondary{background:var(--green-light);color:var(--green);border:2px solid var(--green)}.btn.blue{background:var(--blue)}.btn.orange{background:var(--orange)}.btn.red{background:var(--red)}.btn.full{width:100%}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.muted{font-size:12.5px;color:var(--sub);line-height:1.5}.notice{background:var(--yellow-light);border:1.5px solid #e9b64b;color:#6d4700;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:12px}
+.topic-grid{display:grid;grid-template-columns:1fr;gap:12px}.topic-card{cursor:pointer;border:2px solid transparent}.topic-card.selected{border-color:var(--green);background:linear-gradient(0deg,#fff,#fff),var(--green-light)}.topic-card h3{font-family:'Nunito';font-weight:900;font-size:16px;margin-bottom:5px}.topic-meta{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:900;color:var(--green);margin-bottom:6px}.lesson-output h3,.quiz-output h3{font-family:'Nunito';font-weight:900;margin-bottom:8px}.lesson-output p,.lesson-output li{font-size:14px;line-height:1.6}.lesson-output ul{padding-left:20px;margin-top:8px}.quiz-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quiz-item{border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;background:#fff}.quiz-q{font-weight:900;margin-bottom:10px;line-height:1.45}.option{display:block;padding:10px;border:1.5px solid var(--border);border-radius:12px;margin:8px 0;font-size:14px;cursor:pointer}.option input{margin-right:8px}.answer-box{display:none;margin-top:10px;border-radius:12px;padding:10px;font-size:13px;line-height:1.5;background:var(--green-light);color:var(--green-dark)}.answer-box.show{display:block}.score-box{display:none;background:var(--blue-light);color:#1e3a8a;border:1.5px solid #bfd0ff;border-radius:16px;padding:14px;margin-bottom:12px;font-weight:800}.score-box.show{display:block}
+.filter-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px}.chip{white-space:nowrap;border:2px solid var(--border);background:#fff;color:var(--sub);padding:8px 14px;border-radius:999px;font-weight:800;font-size:13px;cursor:pointer}.chip.active{background:var(--green);color:#fff;border-color:var(--green)}.waste-card{display:flex;gap:14px;align-items:flex-start}.waste-img{width:62px;height:62px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}.waste-info h3{font-family:'Nunito';font-weight:900;font-size:17px}.badge{display:inline-block;font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;border-radius:8px;margin:6px 0}.examples{display:none;margin-top:10px;border-radius:14px;background:#f8fafc;border:1px solid var(--border);padding:12px}.examples.show{display:block}.examples h4{font-family:'Nunito';font-size:14px;margin-bottom:6px}.examples ul{padding-left:18px;font-size:13.5px;line-height:1.7}.tip-box{margin-top:10px;border-radius:12px;padding:10px;background:var(--green-light);font-size:13px;color:var(--green-dark);line-height:1.5}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:60;background:#fff;border-top:1px solid var(--border);display:flex;box-shadow:0 -4px 18px rgba(0,0,0,.08)}.nav-item{flex:1;border:none;background:#fff;color:#9aa0a6;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer}.nav-item .nav-ico{font-size:22px;line-height:1}.nav-item.active{color:var(--green);background:#f7fcf9}.nav-item.active .nav-ico{transform:translateY(-1px)}
+.loading{display:flex;align-items:center;gap:10px;color:var(--sub);font-size:14px}.spinner{width:18px;height:18px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(min-width:680px){.content,.hero{max-width:760px;margin-left:auto;margin-right:auto}.topic-grid{grid-template-columns:1fr 1fr}.quiz-controls{grid-template-columns:1fr 1fr 1fr}}
 </style>
 </head>
 <body>
-<div class="app">
-  <section id="screen-home" class="screen active">
-    <div class="hero">
-      <div class="hero-top"><div class="logo">Waste<span>Wise</span></div><button class="settings-btn" onclick="openSettings()">⚙️ API</button></div>
-      <h1>Learn smarter waste segregation.</h1>
-      <p>Study short lessons, explore waste types, then test your knowledge with an AI-powered quiz.</p>
-      <div class="mini-stat"><div class="stat"><b>3</b><span>Main features</span></div><div class="stat"><b>AI</b><span>Quiz generator</span></div></div>
-    </div>
-    <div class="content">
-      <div class="section-title">Start here</div>
-      <div class="grid">
-        <div class="card feature-card" onclick="switchScreen('topic')"><div class="feature-icon" style="background:var(--green-soft)">📚</div><div><h3>Topic / Lesson</h3><p>Read quick lessons about waste management, bins, recycling, and safe disposal.</p></div></div>
-        <div class="card feature-card" onclick="switchScreen('classify')"><div class="feature-icon" style="background:var(--blue-soft)">♻️</div><div><h3>Classification</h3><p>View examples of trash by category with disposal tips and simple visuals.</p></div></div>
-        <div class="card feature-card" onclick="switchScreen('topic')"><div class="feature-icon" style="background:var(--yellow-soft)">🧠</div><div><h3>AI Quiz</h3><p>Choose a topic and number of items. Answers appear only after finishing.</p></div></div>
-      </div>
-      <div class="card" style="margin-top:14px"><b>Reminder:</b><p class="small-note">For best demo stability, prepare your API key before presenting. The lesson and classification pages work even without an API key.</p></div>
-    </div>
-  </section>
+<header class="app-header">
+  <div class="logo">Waste<span>Wise</span></div>
+  <button class="icon-btn" onclick="toggleApiSettings()">⚙️ API</button>
+</header>
 
-  <section id="screen-topic" class="screen">
-    <div class="hero">
-      <div class="hero-top"><div class="logo">Waste<span>Wise</span></div><button class="settings-btn" onclick="openSettings()">⚙️ API</button></div>
-      <h1>Topic / Lesson</h1>
-      <p>Choose a topic, read the lesson, then generate a quiz based on that topic.</p>
+<section id="screen-home" class="screen active">
+  <div class="hero">
+    <div class="mini">Smart Waste Learning</div>
+    <h1>Learn waste segregation the easy way.</h1>
+    <p>Study lessons, take AI-generated quizzes, and browse waste classifications with examples and disposal tips.</p>
+  </div>
+  <div class="content">
+    <div id="apiSettings" class="api-card card">
+      <h3 style="font-family:Nunito;font-weight:900;margin-bottom:8px;">🔑 OpenRouter API Key</h3>
+      <p class="muted" style="margin-bottom:10px;">Paste your API key here. It is saved only in this browser/app using localStorage.</p>
+      <input id="apiKeyInput" class="input" type="text" placeholder="sk-or-v1-..." autocomplete="off" />
+      <button class="btn full" style="margin-top:10px;" onclick="saveApiKey()">Save API Key</button>
+      <p id="apiStatus" class="muted" style="margin-top:10px;"></p>
     </div>
-    <div class="content">
-      <div class="section-title">Suggested topics</div>
-      <div id="topicList" class="topic-list"></div>
-      <div id="quizPanel" class="card quiz-panel">
-        <div class="section-title" style="margin-top:0">AI Quiz Generator</div>
-        <p class="small-note">Select topic and number of items. The correct answers will only appear after you finish all questions.</p>
-        <div class="quiz-controls">
-          <select id="quizTopic"></select>
-          <select id="quizCount"><option value="3">3 items</option><option value="5" selected>5 items</option><option value="10">10 items</option></select>
-          <button class="btn btn-primary" onclick="generateQuiz()">Generate Quiz</button>
+
+    <div class="section-label">Features</div>
+    <div class="feature-card" onclick="switchScreen('lesson')">
+      <div class="feature-icon" style="background:var(--green-light);">📘</div>
+      <div><h3>Topic & Lesson</h3><p>Select a topic, read a short AI lesson, then generate a quiz.</p></div><div class="chev">›</div>
+    </div>
+    <div class="feature-card" onclick="switchScreen('classify')">
+      <div class="feature-icon" style="background:var(--blue-light);">♻️</div>
+      <div><h3>Classification</h3><p>View waste types, examples, and disposal tips.</p></div><div class="chev">›</div>
+    </div>
+
+    <div class="section-label">Quick Guide</div>
+    <div class="card">
+      <p style="line-height:1.6;font-size:14px;">Start with a lesson, choose how many quiz items you want, answer all questions, then view the correct answers and explanations after finishing.</p>
+    </div>
+  </div>
+</section>
+
+<section id="screen-lesson" class="screen">
+  <div class="hero">
+    <div class="mini">Topic / Lesson</div>
+    <h1>Study first, quiz after.</h1>
+    <p>Choose a suggested topic about waste management. Generate a lesson, then create an AI quiz from that lesson.</p>
+  </div>
+  <div class="content">
+    <div class="notice">Tip: Save your API key first on the Home page. The app can still show built-in fallback lessons if the API fails.</div>
+    <div class="section-label">Suggested Topics</div>
+    <div id="topicList" class="topic-grid"></div>
+
+    <div class="section-label">Lesson</div>
+    <div id="lessonOutput" class="card lesson-output">
+      <p class="muted">Select a topic, then tap “Generate Lesson.”</p>
+    </div>
+
+    <div class="card">
+      <h3 style="font-family:Nunito;font-weight:900;margin-bottom:10px;">🧠 Quiz Settings</h3>
+      <div class="quiz-controls">
+        <div>
+          <label class="muted">Number of items</label>
+          <select id="quizCount" class="input">
+            <option value="3">3 items</option>
+            <option value="5" selected>5 items</option>
+            <option value="10">10 items</option>
+          </select>
         </div>
-        <div id="aiStatus" class="ai-status"><span class="loading"></span>Generating quiz...</div>
-        <div id="quizContainer"></div>
-        <div id="quizResult" class="quiz-result"></div>
+        <button class="btn blue" onclick="generateQuiz()">Generate Quiz</button>
+        <button class="btn secondary" onclick="resetQuiz()">Reset</button>
       </div>
     </div>
-  </section>
 
-  <section id="screen-classify" class="screen">
-    <div class="hero">
-      <div class="hero-top"><div class="logo">Waste<span>Wise</span></div><span class="pill">Examples + Tips</span></div>
-      <h1>Classification</h1>
-      <p>Learn common waste types, view examples, and see how to dispose each one properly.</p>
-    </div>
-    <div class="content">
-      <div class="class-filter" id="classFilter"></div>
-      <div id="wasteList" class="waste-grid"></div>
-    </div>
-  </section>
-</div>
+    <div id="scoreBox" class="score-box"></div>
+    <div id="quizOutput" class="quiz-output"></div>
+  </div>
+</section>
+
+<section id="screen-classify" class="screen">
+  <div class="hero">
+    <div class="mini">Classification</div>
+    <h1>Waste types, examples, and tips.</h1>
+    <p>Tap “View Examples & Tip” to learn common trash examples and how to dispose of them properly.</p>
+  </div>
+  <div class="content">
+    <div class="filter-chips" id="classifyChips"></div>
+    <div id="classifyList"></div>
+  </div>
+</section>
 
 <nav class="bottom-nav">
-  <button id="nav-home" class="nav-item active" onclick="switchScreen('home')"><span class="ico">🏠</span>Home</button>
-  <button id="nav-topic" class="nav-item" onclick="switchScreen('topic')"><span class="ico">📚</span>Lesson</button>
-  <button id="nav-classify" class="nav-item" onclick="switchScreen('classify')"><span class="ico">♻️</span>Classify</button>
+  <button id="nav-home" class="nav-item active" onclick="switchScreen('home')"><span class="nav-ico">🏠</span><span>Home</span></button>
+  <button id="nav-lesson" class="nav-item" onclick="switchScreen('lesson')"><span class="nav-ico">📘</span><span>Lesson</span></button>
+  <button id="nav-classify" class="nav-item" onclick="switchScreen('classify')"><span class="nav-ico">♻️</span><span>Classify</span></button>
 </nav>
 
-<div id="settingsModal" class="modal-overlay">
-  <div class="modal">
-    <h2>OpenRouter API Key</h2>
-    <p>Needed only for the real AI quiz generator. Your key is saved only in this device browser storage.</p>
-    <input id="apiKeyInput" type="password" placeholder="sk-or-v1-..." />
-    <button class="btn btn-primary" style="width:100%" onclick="saveApiKey()">Save API Key</button>
-    <button class="btn btn-muted" style="width:100%;margin-top:8px" onclick="closeSettings()">Close</button>
-  </div>
-</div>
-
 <script>
-const TOPICS=[
- {id:'basics',emoji:'🌱',title:'Waste Segregation Basics',summary:'Learn why separating trash matters and how it helps communities.',lesson:['Waste segregation means separating waste based on type before disposal.','It helps reduce landfill waste and makes recycling easier.','Common groups include biodegradable, recyclable, residual, non-biodegradable, and hazardous waste.'],key:['Separate at source','Use correct bins','Keep recyclables clean']},
- {id:'biodegradable',emoji:'🍃',title:'Biodegradable Waste',summary:'Food scraps, leaves, and organic waste that can naturally decompose.',lesson:['Biodegradable waste can break down naturally through microorganisms.','Examples include fruit peels, vegetable scraps, leaves, and food leftovers.','It is better to compost these instead of mixing them with regular trash.'],key:['Compost if possible','Avoid mixing with plastic','Keep in covered bin']},
- {id:'recycling',emoji:'♻️',title:'Recycling and Reusables',summary:'Understand what materials can be recycled and how to prepare them.',lesson:['Recyclables include clean bottles, cans, cardboard, and paper.','Dirty recyclables can contaminate other recyclable materials.','Rinse containers and flatten boxes before disposal.'],key:['Rinse containers','Dry before binning','Reuse when possible']},
- {id:'hazardous',emoji:'⚠️',title:'Hazardous Waste Safety',summary:'Learn how to handle batteries, chemicals, bulbs, and e-waste safely.',lesson:['Hazardous waste can harm people, animals, and the environment.','Examples include batteries, chemicals, broken bulbs, and electronic waste.','Do not throw hazardous items with regular household trash.'],key:['Never mix with food waste','Use drop-off centers','Keep away from children']},
- {id:'plastic',emoji:'🧴',title:'Plastic Waste Management',summary:'Learn how to reduce plastic use and handle plastic trash properly.',lesson:['Plastic waste can stay in the environment for a long time.','Some plastics are recyclable, but wrappers and sachets often become residual waste.','Using reusable bottles, bags, and containers reduces plastic waste.'],key:['Avoid single-use plastic','Clean recyclable plastic','Reuse containers']}
+let apiKey = localStorage.getItem('openrouter_key') || '';
+let selectedTopic = null;
+let currentQuiz = [];
+let quizFinished = false;
+
+const TOPICS = [
+  {id:'basics', icon:'🗑️', title:'Waste Segregation Basics', level:'Beginner', prompt:'waste segregation basics, biodegradable, recyclable, residual, and hazardous waste'},
+  {id:'recycling', icon:'♻️', title:'Recycling & Reuse', level:'Beginner', prompt:'recycling, reuse, reducing waste, and proper cleaning of recyclables'},
+  {id:'hazardous', icon:'⚠️', title:'Hazardous Waste Safety', level:'Intermediate', prompt:'hazardous waste like batteries, chemicals, e-waste, and safe disposal'},
+  {id:'composting', icon:'🍃', title:'Composting at Home', level:'Beginner', prompt:'composting food scraps, leaves, biodegradable waste, and home compost tips'},
+  {id:'philippines', icon:'🇵🇭', title:'Waste Management in the Philippines', level:'Intermediate', prompt:'Philippine waste management, RA 9003, barangay segregation, MRF, and household responsibility'},
+  {id:'plastic', icon:'🥤', title:'Plastic Waste Awareness', level:'Beginner', prompt:'plastic waste, single-use plastic, plastic bottles, wrappers, and reduction tips'}
 ];
-const WASTE=[
- {id:'bio',emoji:'🍃',img:'🥬',label:'Biodegradable',sub:'Food scraps, leaves, paper',badge:'Green Bin / Compost',bg:'var(--green-soft)',color:'var(--green)',desc:'Organic waste that naturally decomposes and can often be composted.',examples:['Fruit peels','Vegetable scraps','Leftover rice','Leaves','Coffee grounds'],tip:'Place in a covered green bin or compost pit. Avoid mixing with plastics so it can decompose properly.'},
- {id:'rec',emoji:'♻️',img:'🧃',label:'Recyclable',sub:'Clean bottles, cans, cardboard',badge:'Recycle Bin',bg:'#e0f2fe',color:'#0369a1',desc:'Materials that can be processed and used again if clean and dry.',examples:['Plastic bottles','Glass jars','Aluminum cans','Cardboard boxes','Clean paper'],tip:'Rinse containers, remove food residue, dry them, and flatten cardboard to save space.'},
- {id:'nonbio',emoji:'🧱',img:'🛍️',label:'Non-Biodegradable',sub:'Plastics, rubber, synthetic materials',badge:'Blue Bin',bg:'var(--blue-soft)',color:'var(--blue)',desc:'Waste that does not easily decompose and should be separated from organic waste.',examples:['Plastic wrappers','Styrofoam','Rubber items','Old synthetic clothes','Plastic utensils'],tip:'Reuse if possible. If not recyclable, keep separate and send to proper collection.'},
- {id:'res',emoji:'🗑️',img:'🧻',label:'Residual Waste',sub:'Soiled items and non-recyclables',badge:'Black Bag',bg:'var(--orange-soft)',color:'var(--orange)',desc:'Waste that cannot be recycled or composted because it is contaminated or unusable.',examples:['Used tissue','Diapers','Soiled plastic','Cigarette butts','Sanitary waste'],tip:'Seal properly in a black bag. Keep away from recyclables to avoid contamination.'},
- {id:'haz',emoji:'⚠️',img:'🔋',label:'Hazardous Waste',sub:'Batteries, chemicals, e-waste',badge:'Special Disposal',bg:'var(--red-soft)',color:'var(--red)',desc:'Waste that may be toxic, flammable, corrosive, or harmful to health and environment.',examples:['Batteries','Broken bulbs','Paint cans','Pesticides','Old phones'],tip:'Do not mix with household trash. Bring to barangay/LGU collection points or e-waste drives.'}
+
+const FALLBACK_LESSONS = {
+  basics: '<h3>Waste Segregation Basics</h3><p>Waste segregation means separating trash based on its type so it can be collected, reused, recycled, composted, or disposed of safely.</p><ul><li><b>Biodegradable:</b> food scraps, leaves, and other organic waste.</li><li><b>Recyclable:</b> clean bottles, cans, paper, and cardboard.</li><li><b>Residual:</b> soiled items that cannot be recycled or composted.</li><li><b>Hazardous:</b> batteries, chemicals, bulbs, and e-waste.</li></ul>',
+  recycling: '<h3>Recycling & Reuse</h3><p>Recycling turns useful materials into new products. Reuse means using an item again before throwing it away.</p><ul><li>Rinse bottles and cans before recycling.</li><li>Flatten cardboard to save space.</li><li>Reuse containers when safe and clean.</li></ul>',
+  hazardous: '<h3>Hazardous Waste Safety</h3><p>Hazardous waste can harm people, animals, and the environment. It should never be mixed with regular trash.</p><ul><li>Separate batteries, bulbs, chemicals, and e-waste.</li><li>Bring them to barangay or LGU collection points if available.</li><li>Do not burn or open hazardous items.</li></ul>',
+  composting: '<h3>Composting at Home</h3><p>Composting turns biodegradable waste into useful soil material. It reduces trash and helps plants grow.</p><ul><li>Use fruit peels, vegetable scraps, leaves, and coffee grounds.</li><li>Avoid meat, oil, and heavily salty food.</li><li>Keep compost slightly moist and mixed.</li></ul>',
+  philippines: '<h3>Waste Management in the Philippines</h3><p>RA 9003 promotes ecological solid waste management. Households are encouraged to segregate waste and support barangay collection systems.</p><ul><li>Separate waste at home.</li><li>Use MRFs for recyclables when available.</li><li>Follow local collection schedules.</li></ul>',
+  plastic: '<h3>Plastic Waste Awareness</h3><p>Plastic waste is a major environmental problem because many plastics take a long time to break down.</p><ul><li>Bring reusable bottles and bags.</li><li>Avoid unnecessary single-use plastic.</li><li>Recycle clean plastic bottles when accepted.</li></ul>'
+};
+
+const WASTE_DATA = [
+  {id:'bio', emoji:'🍌', label:'Biodegradable', sub:'Food scraps, leaves, organic waste', badge:'Green Bin / Compost', bg:'var(--green-light)', badgeBg:'#d1fae5', badgeColor:'#065f46', examples:['Fruit peels','Vegetable scraps','Leaves','Coffee grounds','Egg shells'], tip:'Compost if possible. Keep wet food waste separate from recyclables to avoid contamination.'},
+  {id:'rec', emoji:'🥫', label:'Recyclable', sub:'Clean bottles, cans, paper, cardboard', badge:'Recycle Bin', bg:'#e0f2fe', badgeBg:'#bae6fd', badgeColor:'#075985', examples:['Plastic bottles','Glass jars','Aluminum cans','Clean cardboard','Paper'], tip:'Rinse and dry containers before recycling. Flatten boxes to save space.'},
+  {id:'nonbio', emoji:'🧴', label:'Non-Biodegradable', sub:'Plastic, rubber, synthetic items', badge:'Blue Bin / Dry Waste', bg:'var(--blue-light)', badgeBg:'#dbeafe', badgeColor:'#1e40af', examples:['Plastic wrappers','Rubber items','Styrofoam','Synthetic cloth','Plastic sachets'], tip:'Reduce use when possible. Reuse clean items, and separate from food waste.'},
+  {id:'res', emoji:'🧻', label:'Residual Waste', sub:'Soiled and non-recyclable waste', badge:'Black Bag', bg:'var(--orange-light)', badgeBg:'#fed7aa', badgeColor:'#9a3412', examples:['Used tissue','Diapers','Soiled plastics','Sanitary waste','Cigarette butts'], tip:'Seal properly before disposal. Do not mix with recyclables or compostables.'},
+  {id:'haz', emoji:'🔋', label:'Hazardous Waste', sub:'Batteries, bulbs, chemicals, e-waste', badge:'Special Disposal', bg:'var(--red-light)', badgeBg:'#fecaca', badgeColor:'#991b1b', examples:['Batteries','Light bulbs','Paint cans','Cleaning chemicals','Broken electronics'], tip:'Do not throw with regular trash. Store safely and bring to proper collection or LGU drop-off points.'}
 ];
-let apiKey=localStorage.getItem('openrouter_key')||'';
-let quiz=[],answers=[],currentQ=0,selectedTopic='basics';
-function switchScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('nav-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
-function renderTopics(){const list=document.getElementById('topicList');list.innerHTML=TOPICS.map(t=>`<div class="card topic-card"><div class="topic-head" onclick="toggleLesson('${t.id}')"><div class="topic-emoji">${t.emoji}</div><div><h3>${t.title}</h3><p>${t.summary}</p></div></div><div id="lesson-${t.id}" class="lesson-box"><p>${t.lesson.join(' ')}</p><h4>Key reminders</h4><ul>${t.key.map(k=>`<li>${k}</li>`).join('')}</ul><div class="btn-row"><button class="btn btn-secondary" onclick="selectQuizTopic('${t.id}')">Use this for quiz</button></div></div></div>`).join('');const sel=document.getElementById('quizTopic');sel.innerHTML=TOPICS.map(t=>`<option value="${t.id}">${t.title}</option>`).join('');}
-function toggleLesson(id){document.getElementById('lesson-'+id).classList.toggle('open');}
-function selectQuizTopic(id){selectedTopic=id;document.getElementById('quizTopic').value=id;document.getElementById('quizPanel').scrollIntoView({behavior:'smooth'});}
-function fallbackQuiz(topic,count){const base={basics:['Which action is part of proper waste segregation?','Why should waste be separated at home?','Which bin is best for organic waste?'],biodegradable:['Which item is biodegradable?','What is a good way to handle food scraps?','Why should biodegradable waste be separated?'],recycling:['What should you do before recycling a bottle?','Which item is commonly recyclable?','Why should recyclables be dry?'],hazardous:['Which item is hazardous waste?','Where should batteries be disposed?','Why should hazardous waste be separated?'],plastic:['Which habit reduces plastic waste?','Which plastic item is often residual?','Why reuse containers?']};let qs=(base[topic]||base.basics);let arr=[];for(let i=0;i<count;i++){arr.push({question:qs[i%qs.length],choices:['Throw all trash together','Separate based on type','Burn waste anywhere','Leave trash outside'],answer:1,explanation:'Separating waste by type helps recycling, composting, and safer disposal.'});}return arr;}
-async function generateQuiz(){const topic=document.getElementById('quizTopic').value;const count=parseInt(document.getElementById('quizCount').value,10);selectedTopic=topic;answers=[];currentQ=0;document.getElementById('quizResult').classList.remove('open');document.getElementById('quizContainer').innerHTML='';const status=document.getElementById('aiStatus');status.classList.add('open');const topicTitle=TOPICS.find(t=>t.id===topic)?.title||'Waste Management';
- if(!apiKey){quiz=fallbackQuiz(topic,count);status.classList.remove('open');renderQuestion();openSettings();return;}
- try{const prompt=`Create ${count} multiple-choice quiz questions for students about ${topicTitle}. Return ONLY valid JSON array. Each item: {"question":"...","choices":["A","B","C","D"],"answer":0,"explanation":"short explanation"}. Answer must be index 0-3. Topic should be about waste segregation and trash disposal in the Philippines.`;const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey.trim(),'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'WasteWise AI Quiz'},body:JSON.stringify({model:'google/gemini-2.0-flash-001',messages:[{role:'user',content:prompt}],max_tokens:1600})});const data=await res.json();if(data.error)throw new Error(data.error.message||'API error');let text=data.choices?.[0]?.message?.content||'';text=text.replace(/```json|```/g,'').trim();quiz=JSON.parse(text).slice(0,count);if(!Array.isArray(quiz)||quiz.length===0)throw new Error('Bad AI quiz format');}
- catch(e){quiz=fallbackQuiz(topic,count);alert('AI quiz failed, using backup questions instead.');}
- status.classList.remove('open');renderQuestion();}
-function renderQuestion(){const box=document.getElementById('quizContainer');const q=quiz[currentQ];box.innerHTML=`<div class="card question-card active"><div class="question-num">Question ${currentQ+1} of ${quiz.length}</div><div class="question-text">${q.question}</div>${q.choices.map((c,i)=>`<button class="choice ${answers[currentQ]===i?'selected':''}" onclick="selectAnswer(${i})">${String.fromCharCode(65+i)}. ${c}</button>`).join('')}<div class="btn-row"><button class="btn btn-muted" onclick="prevQuestion()" ${currentQ===0?'disabled':''}>Back</button><button class="btn btn-primary" onclick="nextQuestion()">${currentQ===quiz.length-1?'Finish Quiz':'Next'}</button></div><p class="small-note">Answers and explanations are hidden until you finish all items.</p></div>`;}
-function selectAnswer(i){answers[currentQ]=i;renderQuestion();}
-function prevQuestion(){if(currentQ>0){currentQ--;renderQuestion();}}
-function nextQuestion(){if(answers[currentQ]===undefined){alert('Please choose an answer first.');return;}if(currentQ<quiz.length-1){currentQ++;renderQuestion();}else showResults();}
-function showResults(){let score=0;quiz.forEach((q,i)=>{if(answers[i]===q.answer)score++;});document.getElementById('quizContainer').innerHTML='';const res=document.getElementById('quizResult');res.classList.add('open');res.innerHTML=`<div class="card"><div class="section-title" style="margin-top:0">Quiz Finished</div><h2 style="font-family:Nunito,sans-serif">Score: ${score}/${quiz.length}</h2><p class="small-note">Here are the answers and explanations:</p>${quiz.map((q,i)=>`<div class="answer-review"><h4>${i+1}. ${q.question}</h4><p>Your answer: <span class="${answers[i]===q.answer?'correct':'wrong'}">${q.choices[answers[i]]}</span></p><p>Correct answer: <span class="correct">${q.choices[q.answer]}</span></p><p>${q.explanation||''}</p></div>`).join('')}<div class="btn-row"><button class="btn btn-primary" onclick="generateQuiz()">Retake / New Quiz</button></div></div>`;}
-function renderClassification(filter='all'){const filterBox=document.getElementById('classFilter');filterBox.innerHTML=['all',...WASTE.map(w=>w.id)].map(id=>`<button class="chip ${filter===id?'active':''}" onclick="renderClassification('${id}')">${id==='all'?'All':WASTE.find(w=>w.id===id).label}</button>`).join('');const items=filter==='all'?WASTE:WASTE.filter(w=>w.id===filter);document.getElementById('wasteList').innerHTML=items.map(w=>`<div class="card waste-card"><div class="waste-img">${w.img}</div><div class="waste-body"><div class="waste-top"><div class="waste-icon" style="background:${w.bg};color:${w.color}">${w.emoji}</div><div><h3>${w.label}</h3><span class="badge" style="background:${w.bg};color:${w.color}">${w.badge}</span></div></div><p>${w.desc}</p><button class="btn btn-secondary" style="margin-top:12px" onclick="toggleExamples('${w.id}')">View examples + disposal tip</button><div id="examples-${w.id}" class="example-box"><h4>Examples</h4><div class="example-tags">${w.examples.map(e=>`<span class="tag">${e}</span>`).join('')}</div><div class="tip-box"><b>Disposal tip:</b> ${w.tip}</div></div></div></div>`).join('');}
-function toggleExamples(id){document.getElementById('examples-'+id).classList.toggle('open');}
-function openSettings(){document.getElementById('apiKeyInput').value=apiKey;document.getElementById('settingsModal').classList.add('open');}
-function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
-function saveApiKey(){apiKey=document.getElementById('apiKeyInput').value.trim();if(apiKey)localStorage.setItem('openrouter_key',apiKey);closeSettings();}
-window.onload=()=>{renderTopics();renderClassification();};
+
+function toggleApiSettings(){document.getElementById('apiSettings').classList.toggle('open');setTimeout(()=>document.getElementById('apiKeyInput')?.focus(),120)}
+function saveApiKey(){const val=document.getElementById('apiKeyInput').value.trim();if(!val){setStatus('Please enter an API key first.');return}apiKey=val;localStorage.setItem('openrouter_key',val);setStatus('API key saved.');}
+function setStatus(msg){document.getElementById('apiStatus').textContent=msg;}
+
+function switchScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function renderTopics(){
+  const box=document.getElementById('topicList');
+  box.innerHTML=TOPICS.map(t=>`<div class="card topic-card" id="topic-${t.id}" onclick="selectTopic('${t.id}')"><div class="topic-meta">${t.level}</div><h3>${t.icon} ${t.title}</h3><p class="muted">Tap to select this lesson topic.</p></div>`).join('');
+}
+function selectTopic(id){
+  selectedTopic=TOPICS.find(t=>t.id===id);
+  document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('topic-'+id).classList.add('selected');
+  generateLesson();
+}
+
+async function callOpenRouter(prompt){
+  if(!apiKey) throw new Error('Missing API key. Open Home → API and save your key.');
+  const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json','HTTP-Referer':location.href,'X-Title':'WasteWise'},body:JSON.stringify({model:'google/gemini-2.0-flash-001',messages:[{role:'user',content:prompt}],max_tokens:1100})});
+  const data=await res.json();
+  if(data.error) throw new Error(data.error.message||'API error');
+  return data.choices?.[0]?.message?.content||'';
+}
+async function generateLesson(){
+  if(!selectedTopic) return;
+  const out=document.getElementById('lessonOutput');
+  out.innerHTML='<div class="loading"><div class="spinner"></div><span>Generating lesson...</span></div>';
+  const prompt=`Create a short student-friendly lesson about ${selectedTopic.prompt}. Use simple English. Format in HTML only using <h3>, <p>, <ul>, <li>, and <b>. Keep it concise.`;
+  try{out.innerHTML=await callOpenRouter(prompt)}catch(e){out.innerHTML=FALLBACK_LESSONS[selectedTopic.id]+'<p class="muted" style="margin-top:10px;">Fallback lesson shown because: '+escapeHtml(e.message)+'</p>'}
+  resetQuiz();
+}
+
+async function generateQuiz(){
+  if(!selectedTopic){alert('Select a topic first.');return}
+  const count=parseInt(document.getElementById('quizCount').value,10);
+  const out=document.getElementById('quizOutput');
+  document.getElementById('scoreBox').classList.remove('show');
+  out.innerHTML='<div class="card loading"><div class="spinner"></div><span>Generating quiz...</span></div>';
+  quizFinished=false;
+  const prompt=`Generate exactly ${count} multiple choice quiz questions about ${selectedTopic.prompt}. Return ONLY valid JSON array. Each item must have: question, options array of 4 strings, answerIndex number 0-3, explanation. No markdown.`;
+  try{
+    let text=await callOpenRouter(prompt);
+    text=text.replace(/```json|```/g,'').trim();
+    currentQuiz=JSON.parse(text);
+    renderQuiz();
+  }catch(e){
+    currentQuiz=makeFallbackQuiz(count);
+    renderQuiz();
+    const warn=document.createElement('div');warn.className='notice';warn.textContent='Fallback quiz shown because: '+e.message;out.prepend(warn);
+  }
+}
+function makeFallbackQuiz(count){
+  const bank=[
+    {question:'Which waste type can naturally decompose?',options:['Hazardous','Biodegradable','Residual','Metal'],answerIndex:1,explanation:'Biodegradable waste breaks down naturally, like food scraps and leaves.'},
+    {question:'What should you do before recycling bottles?',options:['Burn them','Rinse them','Mix with food waste','Break them'],answerIndex:1,explanation:'Clean recyclables are easier to process and less likely to contaminate other materials.'},
+    {question:'Which item is hazardous waste?',options:['Banana peel','Cardboard','Battery','Clean bottle'],answerIndex:2,explanation:'Batteries contain materials that need special disposal.'},
+    {question:'Where can food scraps usually go?',options:['Compost','E-waste bin','Hazardous box','Drain'],answerIndex:0,explanation:'Food scraps can often be composted if managed properly.'},
+    {question:'Why should waste be segregated?',options:['To make trash heavier','To support recycling and safe disposal','To make collection slower','To mix everything'],answerIndex:1,explanation:'Segregation helps composting, recycling, and safe handling of harmful waste.'}
+  ];
+  const arr=[];for(let i=0;i<count;i++)arr.push(bank[i%bank.length]);return arr;
+}
+function renderQuiz(){
+  const out=document.getElementById('quizOutput');
+  out.innerHTML=currentQuiz.map((q,i)=>`<div class="quiz-item"><div class="quiz-q">${i+1}. ${escapeHtml(q.question)}</div>${q.options.map((op,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"> ${escapeHtml(op)}</label>`).join('')}<div class="answer-box" id="ans-${i}"><b>Correct answer:</b> ${escapeHtml(q.options[q.answerIndex])}<br><b>Explanation:</b> ${escapeHtml(q.explanation||'')}</div></div>`).join('')+`<button class="btn full" onclick="finishQuiz()">Finish Quiz & View Answers</button>`;
+}
+function finishQuiz(){
+  let score=0;
+  currentQuiz.forEach((q,i)=>{const picked=document.querySelector(`input[name="q${i}"]:checked`);if(picked&&parseInt(picked.value,10)===q.answerIndex)score++;document.getElementById('ans-'+i).classList.add('show')});
+  const scoreBox=document.getElementById('scoreBox');scoreBox.textContent=`Score: ${score} / ${currentQuiz.length}. Answers and explanations are now visible.`;scoreBox.classList.add('show');quizFinished=true;window.scrollTo({top:document.getElementById('scoreBox').offsetTop-80,behavior:'smooth'});
+}
+function resetQuiz(){currentQuiz=[];quizFinished=false;document.getElementById('quizOutput').innerHTML='';document.getElementById('scoreBox').classList.remove('show')}
+
+function renderClassification(filter='all'){
+  const chips=document.getElementById('classifyChips');
+  const chipData=[['all','All'],['bio','Biodegradable'],['rec','Recyclable'],['nonbio','Non-biodeg.'],['res','Residual'],['haz','Hazardous']];
+  chips.innerHTML=chipData.map(c=>`<button class="chip ${filter===c[0]?'active':''}" onclick="renderClassification('${c[0]}')">${c[1]}</button>`).join('');
+  const list=document.getElementById('classifyList');
+  const items=filter==='all'?WASTE_DATA:WASTE_DATA.filter(w=>w.id===filter);
+  list.innerHTML=items.map(w=>`<div class="card waste-card"><div class="waste-img" style="background:${w.bg};">${w.emoji}</div><div class="waste-info"><h3>${w.label}</h3><p class="muted">${w.sub}</p><span class="badge" style="background:${w.badgeBg};color:${w.badgeColor};">${w.badge}</span><br><button class="btn secondary" onclick="toggleExamples('${w.id}')">View Examples & Tip</button><div id="ex-${w.id}" class="examples"><h4>Examples</h4><ul>${w.examples.map(e=>`<li>${escapeHtml(e)}</li>`).join('')}</ul><div class="tip-box"><b>Disposal Tip:</b> ${escapeHtml(w.tip)}</div></div></div></div>`).join('');
+}
+function toggleExamples(id){document.getElementById('ex-'+id).classList.toggle('show')}
+function escapeHtml(str){return String(str).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
+
+window.addEventListener('load',()=>{
+  document.getElementById('apiKeyInput').value=apiKey;
+  if(apiKey) setStatus('API key is saved.');
+  renderTopics();
+  renderClassification('all');
+});
 </script>
 </body>
 </html>
